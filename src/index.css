@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-base: #07090C;
+  --color-bg-secondary: #0D1117;
+  --color-bg-panel: #11161D;
+  --color-bg-panel-hover: #161D26;
+  --color-border-subtle: #1B222C;
+  --color-border-hover: #263140;
+  --color-accent-blue: #00C2FF;
+  --color-accent-green: #22C55E;
+  --color-accent-red: #EF4444;
+  --color-text-primary: #F5F7FA;
+  --color-text-muted: #8B949E;
+  --color-text-dim: #505A66;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #07090C;
+  color: #F5F7FA;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom terminal scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #07090C;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1B222C;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #263140;
+}
+
+/* Tabular figures for financial numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle glow utilities */
+.glow-accent {
+  box-shadow: 0 0 15px -3px rgba(0, 194, 255, 0.15);
+}
+
+.glow-green {
+  box-shadow: 0 0 15px -3px rgba(34, 197, 94, 0.15);
+}
+
+.glow-red {
+  box-shadow: 0 0 15px -3px rgba(239, 68, 68, 0.15);
+}

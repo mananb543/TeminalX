@@ -1,0 +1,84 @@
+{
+  "users": [
+    {
+      "id": "660000000000000000000001",
+      "name": "Engineering Student",
+      "email": "demo.student@terminalx.io",
+      "passwordHash": "$2b$10$oiHHewJ2ClXv0wQwWsGMueP9xwdzjD5jNc8UPYAunsdjGTniGiF9a",
+      "balance": 1000000,
+      "createdAt": "2026-09-29T19:28:13.928Z",
+      "updatedAt": "2026-09-29T19:28:13.928Z"
+    },
+    {
+      "id": "660000000000000000000002",
+      "name": "Institutional Demo Trader",
+      "email": "trader@terminalx.io",
+      "passwordHash": "$2b$10$oiHHewJ2ClXv0wQwWsGMueP9xwdzjD5jNc8UPYAunsdjGTniGiF9a",
+      "balance": 785400,
+      "createdAt": "2026-09-29T19:28:13.928Z",
+      "updatedAt": "2026-09-29T19:28:13.928Z"
+    },
+    {
+      "id": "6abc1157f7b63b72226df7de",
+      "name": "Portfolio Test Trader",
+      "email": "portfolio.trader.1790710103382@terminalx.io",
+      "passwordHash": "$2b$10$VaQO7uCtj89VlN.sZXjsLuG5wpGSj7D5AnbyzYg.MiEriKoInG6Mq",
+      "balance": 1000000,
+      "createdAt": "2026-09-29T19:28:23.525Z",
+      "updatedAt": "2026-09-29T19:28:23.525Z"
+    },
+    {
+      "id": "6abc24b2d3f01511df942834",
+      "name": "Verification Officer",
+      "email": "verify_1790715058576@terminalx.io",
+      "passwordHash": "$2b$10$zC2vsrxVCvC102rH4xcq7uEYKWeSDn.lp5yniSEMwvfaBtOJdLVei",
+      "balance": 1000000,
+      "createdAt": "2026-09-29T20:50:58.711Z",
+      "updatedAt": "2026-09-29T20:50:58.711Z"
+    },
+    {
+      "id": "6abc27af3db1c8315542c08b",
+      "name": "Atlas Verification User",
+      "email": "tester_1790715823311@terminalx.io",
+      "passwordHash": "$2b$10$u3m5bvmTxS9ykGiSiTyWouNerMsvKwEUS85.Hk5I79YwLnJU84Wmu",
+      "balance": 1000000,
+      "createdAt": "2026-09-29T21:03:43.436Z",
+      "updatedAt": "2026-09-29T21:03:43.436Z"
+    }
+  ],
+  "holdings": [
+    {
+      "id": "h_seed_1",
+      "userId": "660000000000000000000002",
+      "symbol": "RELIANCE",
+      "quantity": 50,
+      "averagePrice": 2840,
+      "totalCost": 142000,
+      "createdAt": "2026-09-26T19:28:13.928Z",
+      "updatedAt": "2026-09-29T19:28:13.928Z"
+    },
+    {
+      "id": "h_seed_2",
+      "userId": "660000000000000000000002",
+      "symbol": "TCS",
+      "quantity": 25,
+      "averagePrice": 3920,
+      "totalCost": 98000,
+      "createdAt": "2026-09-24T19:28:13.928Z",
+      "updatedAt": "2026-09-29T19:28:13.928Z"
+    },
+    {
+      "id": "h_seed_3",
+      "userId": "660000000000000000000002",
+      "symbol": "INFY",
+      "quantity": 40,
+      "averagePrice": 1580,
+      "totalCost": 63200,
+      "createdAt": "2026-09-27T19:28:13.928Z",
+      "updatedAt": "2026-09-29T19:28:13.928Z"
+    }
+  ],
+  "orders": [],
+  "transactions": [],
+  "watchlists": []
+}

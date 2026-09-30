@@ -1,0 +1,6 @@
+{
+  "name": "TERMINALX - Markets. Data. Intelligence.",
+  "description": "Institutional-grade paper trading platform and financial terminal for Indian and global markets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
