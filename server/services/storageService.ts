@@ -14,8 +14,20 @@ import { Holding, IHolding } from '../models/Holding.ts';
 import { Order, IOrder, OrderSide, OrderType, OrderStatus } from '../models/Order.ts';
 import { Transaction, ITransaction } from '../models/Transaction.ts';
 import { Watchlist, IWatchlist } from '../models/Watchlist.ts';
+import { PortfolioSnapshot, IPortfolioSnapshot } from '../models/Portfolio.ts';
 import { dbState } from '../config/database.ts';
 import { hashPassword } from '../utils/password.ts';
+
+export interface StoragePortfolioSnapshot {
+  id: string;
+  userId: string;
+  totalValue: number;
+  cash: number;
+  investedValue: number;
+  realizedPnL: number;
+  unrealizedPnL: number;
+  timestamp: Date;
+}
 
 export interface StorageUser {
   id: string;
@@ -80,6 +92,7 @@ class StorageService {
   private memoryOrders: StorageOrder[] = [];
   private memoryTransactions: StorageTransaction[] = [];
   private memoryWatchlists: Map<string, StorageWatchlist> = new Map();
+  private memorySnapshots: StoragePortfolioSnapshot[] = [];
   private initialized = false;
 
   constructor() {
@@ -811,6 +824,89 @@ class StorageService {
     this.memoryWatchlists.set(key, wl);
     this.saveToDisk();
     return wl;
+  }
+
+  // ---------------- PORTFOLIO SNAPSHOT OPERATIONS ----------------
+
+  public async savePortfolioSnapshot(data: {
+    userId: string;
+    totalValue: number;
+    cash: number;
+    investedValue: number;
+    realizedPnL: number;
+    unrealizedPnL: number;
+    timestamp?: Date;
+  }): Promise<StoragePortfolioSnapshot> {
+    const timestamp = data.timestamp || new Date();
+
+    if (this.isAtlasReady() && mongoose.Types.ObjectId.isValid(data.userId)) {
+      try {
+        const doc = await PortfolioSnapshot.create({
+          userId: data.userId,
+          totalValue: +data.totalValue.toFixed(2),
+          cash: +data.cash.toFixed(2),
+          investedValue: +data.investedValue.toFixed(2),
+          realizedPnL: +data.realizedPnL.toFixed(2),
+          unrealizedPnL: +data.unrealizedPnL.toFixed(2),
+          timestamp,
+        });
+
+        return {
+          id: doc._id.toString(),
+          userId: doc.userId.toString(),
+          totalValue: doc.totalValue,
+          cash: doc.cash,
+          investedValue: doc.investedValue,
+          realizedPnL: doc.realizedPnL,
+          unrealizedPnL: doc.unrealizedPnL,
+          timestamp: doc.timestamp,
+        };
+      } catch (err: any) {
+        console.warn('[StorageService Atlas savePortfolioSnapshot fallback]:', err.message);
+      }
+    }
+
+    const snap: StoragePortfolioSnapshot = {
+      id: `snap_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      userId: data.userId,
+      totalValue: +data.totalValue.toFixed(2),
+      cash: +data.cash.toFixed(2),
+      investedValue: +data.investedValue.toFixed(2),
+      realizedPnL: +data.realizedPnL.toFixed(2),
+      unrealizedPnL: +data.unrealizedPnL.toFixed(2),
+      timestamp,
+    };
+    this.memorySnapshots.push(snap);
+    this.saveToDisk();
+    return snap;
+  }
+
+  public async getPortfolioSnapshots(userId: string, startDate?: Date): Promise<StoragePortfolioSnapshot[]> {
+    if (this.isAtlasReady() && mongoose.Types.ObjectId.isValid(userId)) {
+      try {
+        const query: any = { userId };
+        if (startDate) {
+          query.timestamp = { $gte: startDate };
+        }
+        const docs = await PortfolioSnapshot.find(query).sort({ timestamp: 1 });
+        return docs.map((d) => ({
+          id: d._id.toString(),
+          userId: d.userId.toString(),
+          totalValue: d.totalValue,
+          cash: d.cash,
+          investedValue: d.investedValue,
+          realizedPnL: d.realizedPnL,
+          unrealizedPnL: d.unrealizedPnL,
+          timestamp: d.timestamp,
+        }));
+      } catch (err: any) {
+        console.warn('[StorageService Atlas getPortfolioSnapshots fallback]:', err.message);
+      }
+    }
+
+    return this.memorySnapshots
+      .filter((s) => s.userId === userId && (!startDate || s.timestamp >= startDate))
+      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 }
 

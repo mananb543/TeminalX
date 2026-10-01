@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import authRoutes from './server/routes/authRoutes.ts';
 import marketRoutes from './server/routes/marketRoutes.ts';
 import tradingRoutes from './server/routes/tradingRoutes.ts';
+import analyticsRoutes from './server/analytics/analyticsRoutes.ts';
 import { errorHandler } from './server/middleware/errorHandler.ts';
 import { connectDatabase, dbState } from './server/config/database.ts';
 
@@ -36,13 +37,14 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/markets', marketRoutes);
 app.use('/api/trading', tradingRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'online',
     app: 'TERMINALX',
-    stage: 'STAGE_3_REAL_MARKET_DATA',
+    stage: 'STAGE_4_PORTFOLIO_ANALYTICS_RISK',
     database: {
       status: dbState.status,
       storageType: dbState.storageType,

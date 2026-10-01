@@ -72,3 +72,6 @@ export async function requireAuth(
     });
   }
 }
+
+export const authenticateToken = requireAuth;
+

@@ -1,7 +1,6 @@
 /**
- * TerminalX - Portfolio Model & Financial Calculators
- * Derives real-time portfolio metrics dynamically from User balance, active Holdings, and Transactions.
- * Avoids redundant data duplication while providing standardized quantitative structures.
+ * TerminalX - Portfolio Model & Financial Snapshot Architecture
+ * Tracks point-in-time portfolio equity states, cash balances, and P&L metrics.
  */
 
 import mongoose, { Schema, Document, Model } from 'mongoose';
@@ -21,12 +20,12 @@ export interface IPortfolioMetrics {
   lastUpdated: string;
 }
 
-// Optional snapshot schema for historical equity curve tracking across dates
 export interface IPortfolioSnapshot extends Document {
   userId: mongoose.Types.ObjectId;
-  totalPortfolioValue: number;
-  cashBalance: number;
-  investedCapital: number;
+  totalValue: number;
+  cash: number;
+  investedValue: number;
+  realizedPnL: number;
   unrealizedPnL: number;
   timestamp: Date;
 }
@@ -39,17 +38,21 @@ const PortfolioSnapshotSchema = new Schema<IPortfolioSnapshot>(
       required: true,
       index: true,
     },
-    totalPortfolioValue: {
+    totalValue: {
       type: Number,
       required: true,
     },
-    cashBalance: {
+    cash: {
       type: Number,
       required: true,
     },
-    investedCapital: {
+    investedValue: {
       type: Number,
       required: true,
+    },
+    realizedPnL: {
+      type: Number,
+      default: 0,
     },
     unrealizedPnL: {
       type: Number,
