@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTradingStore } from '../stores/tradingStore.ts';
 import { clientMarketService } from '../lib/marketService.ts';
 import { formatINR, formatUSD, formatPercent, formatLargeNumber } from '../lib/formatters.ts';
-import { Star, Plus, Trash2, TrendingUp, TrendingDown, Search } from 'lucide-react';
+import { Star, Plus, Trash2, TrendingUp, TrendingDown, Search, RefreshCw } from 'lucide-react';
+import { MarketQuote } from '../types/market.ts';
 
 interface WatchlistPageProps {
   onSelectStock: (symbol: string) => void;
@@ -12,15 +13,42 @@ interface WatchlistPageProps {
 export const WatchlistPage: React.FC<WatchlistPageProps> = ({ onSelectStock, onOpenSearch }) => {
   const { watchlist, removeFromWatchlist } = useTradingStore();
   const [filter, setFilter] = useState('');
+  const [quotesList, setQuotesList] = useState<MarketQuote[]>(() =>
+    watchlist.map((sym) => clientMarketService.getQuote(sym)).filter(Boolean)
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const quotes = watchlist
-    .map((sym) => clientMarketService.getQuote(sym))
-    .filter(Boolean)
-    .filter(
-      (q) =>
-        q.symbol.toLowerCase().includes(filter.toLowerCase()) ||
-        q.name.toLowerCase().includes(filter.toLowerCase())
-    );
+  const loadQuotes = async () => {
+    if (watchlist.length === 0) {
+      setQuotesList([]);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const fetched = await clientMarketService.fetchQuotes(watchlist);
+      if (fetched && fetched.length > 0) {
+        setQuotesList(fetched);
+      }
+    } catch {
+      // fallback to cached
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadQuotes();
+    const unsubscribe = clientMarketService.subscribe(() => {
+      setQuotesList(watchlist.map((sym) => clientMarketService.getQuote(sym)).filter(Boolean));
+    });
+    return unsubscribe;
+  }, [watchlist]);
+
+  const quotes = quotesList.filter(
+    (q) =>
+      q.symbol.toLowerCase().includes(filter.toLowerCase()) ||
+      q.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
     <div className="space-y-4">
@@ -55,8 +83,18 @@ export const WatchlistPage: React.FC<WatchlistPageProps> = ({ onSelectStock, onO
             className="w-full bg-[#11161D] border border-[#1B222C] focus:border-[#00C2FF] rounded pl-9 pr-3 py-1.5 text-xs font-mono text-[#F5F7FA] placeholder-[#505A66] focus:outline-none"
           />
         </div>
-        <div className="text-xs font-mono text-[#8B949E]">
-          Tracking <span className="text-[#00C2FF] font-bold">{quotes.length}</span> Securities
+        <div className="flex items-center gap-3 text-xs font-mono text-[#8B949E]">
+          <span>
+            Tracking <span className="text-[#00C2FF] font-bold">{quotes.length}</span> Securities
+          </span>
+          <button
+            onClick={loadQuotes}
+            disabled={isLoading}
+            className="flex items-center gap-1 px-2 py-1 rounded bg-[#161D26] hover:bg-[#1B222C] text-[#8B949E] hover:text-[#00C2FF] transition-colors cursor-pointer disabled:opacity-50"
+            title="Refresh Quotes"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#00C2FF]' : ''}`} />
+          </button>
         </div>
       </div>
 

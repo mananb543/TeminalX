@@ -285,7 +285,7 @@ export class TradingService {
       const unrealizedPnL = +(currentValue - h.totalCost).toFixed(2);
       const unrealizedPnLPercent = h.totalCost > 0 ? +((unrealizedPnL / h.totalCost) * 100).toFixed(2) : 0;
 
-      const dayChangePercent = quote ? quote.changePercent : 0;
+      const dayChangePercent = (quote && quote.changePercent !== null) ? quote.changePercent : 0;
       const dayPnL = +(currentValue * (dayChangePercent / 100)).toFixed(2);
 
       totalInvested += h.totalCost;

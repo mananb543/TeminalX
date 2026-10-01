@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTradingStore } from '../stores/tradingStore.ts';
 import { useAuthStore } from '../stores/authStore.ts';
 import { formatINR } from '../lib/formatters.ts';
-import { RotateCcw, Database, User, LogOut, CheckCircle2, RefreshCw, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { RotateCcw, Database, User, LogOut, CheckCircle2, RefreshCw, AlertTriangle, ShieldCheck, Radio, Activity } from 'lucide-react';
 
 interface DatabaseStatusInfo {
   isConnected: boolean;
@@ -25,6 +25,45 @@ export const SettingsPage: React.FC = () => {
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [reconnectResult, setReconnectResult] = useState<string | null>(null);
 
+  // Market Data Provider status
+  const [providerInfo, setProviderInfo] = useState<{ provider: 'demo' | 'real'; name: string } | null>(null);
+  const [isSwitchingProvider, setIsSwitchingProvider] = useState(false);
+  const [providerSwitchNotice, setProviderSwitchNotice] = useState<string | null>(null);
+
+  const fetchProviderStatus = async () => {
+    try {
+      const res = await fetch('/api/markets/provider');
+      if (res.ok) {
+        const data = await res.json();
+        setProviderInfo(data);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleSwitchProvider = async (mode: 'demo' | 'real') => {
+    setIsSwitchingProvider(true);
+    setProviderSwitchNotice(null);
+    try {
+      const res = await fetch('/api/markets/provider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: mode }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProviderInfo({ provider: data.provider, name: data.name });
+        setProviderSwitchNotice(`Market data provider changed to ${data.provider.toUpperCase()} (${data.name}).`);
+        setTimeout(() => setProviderSwitchNotice(null), 4000);
+      }
+    } catch (err: any) {
+      setProviderSwitchNotice(`Failed to switch provider: ${err.message}`);
+    } finally {
+      setIsSwitchingProvider(false);
+    }
+  };
+
   const fetchDbStatus = async () => {
     try {
       const res = await fetch('/api/database/status');
@@ -39,6 +78,7 @@ export const SettingsPage: React.FC = () => {
 
   useEffect(() => {
     fetchDbStatus();
+    fetchProviderStatus();
   }, []);
 
   const handleReconnectDb = async () => {
@@ -212,6 +252,83 @@ export const SettingsPage: React.FC = () => {
               </p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Market Data Provider Architecture & Mode */}
+      <div className="p-4 bg-[#0D1117] border border-[#1B222C] rounded-lg text-xs font-mono">
+        <div className="flex items-center justify-between pb-3 border-b border-[#1B222C]">
+          <div className="flex items-center gap-2">
+            <Radio className="w-4 h-4 text-[#00C2FF]" />
+            <span className="text-sm font-bold text-[#F5F7FA]">
+              Market Data Provider Architecture
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[#8B949E] text-[11px]">Active Mode:</span>
+            <div className="flex items-center rounded bg-[#11161D] border border-[#1B222C] p-0.5">
+              <button
+                onClick={() => handleSwitchProvider('demo')}
+                disabled={isSwitchingProvider}
+                className={`px-2.5 py-1 rounded text-xs transition-colors cursor-pointer ${
+                  providerInfo?.provider === 'demo'
+                    ? 'bg-[#00C2FF] text-[#07090C] font-bold'
+                    : 'text-[#8B949E] hover:text-[#F5F7FA]'
+                }`}
+              >
+                DEMO
+              </button>
+              <button
+                onClick={() => handleSwitchProvider('real')}
+                disabled={isSwitchingProvider}
+                className={`px-2.5 py-1 rounded text-xs transition-colors cursor-pointer ${
+                  providerInfo?.provider === 'real'
+                    ? 'bg-[#00C2FF] text-[#07090C] font-bold'
+                    : 'text-[#8B949E] hover:text-[#F5F7FA]'
+                }`}
+              >
+                REAL (Twelve Data)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {providerSwitchNotice && (
+          <div className="mt-3 p-2.5 rounded bg-[#11161D] border border-[#1B222C] text-xs text-[#00C2FF] flex items-center gap-2">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>{providerSwitchNotice}</span>
+          </div>
+        )}
+
+        <div className="mt-3 space-y-2 text-[#8B949E]">
+          <div className="flex items-center justify-between">
+            <span>Provider Engine:</span>
+            <span className="text-[#F5F7FA] font-semibold">{providerInfo?.name || 'Institutional Demo Market Engine'}</span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span>Configured Endpoint:</span>
+            <span className="text-[#00C2FF]">https://api.twelvedata.com</span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span>Indian Equity Symbols:</span>
+            <span className="text-[#F5F7FA]">RELIANCE, TCS, INFY, HDFCBANK, ICICIBANK, SBIN, ITC, LT, BHARTIARTL, AXISBANK</span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span>Caching Strategy:</span>
+            <span className="text-[#F5F7FA]">15s Quote TTL · 5m OHLCV TTL · Request Deduplication Active</span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span>Paper Trading Sync:</span>
+            <span className="text-[#22C55E] flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+              Mark-to-Market Real-Time Execution Connected
+            </span>
+          </div>
         </div>
       </div>
 

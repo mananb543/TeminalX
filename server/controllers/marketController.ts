@@ -1,5 +1,5 @@
 /**
- * TerminalX - Market Controller
+ * TerminalX - Market Controller (Legacy Bridge)
  * Request handlers for real-time quotes, charts, order book depth, and market overviews
  */
 
@@ -7,13 +7,13 @@ import { Request, Response } from 'express';
 import { marketService } from '../services/marketService.ts';
 
 export const marketController = {
-  getQuote(req: Request, res: Response) {
+  async getQuote(req: Request, res: Response) {
     try {
       const { symbol } = req.params;
       if (!symbol) {
         return res.status(400).json({ error: 'Ticker symbol is required' });
       }
-      const quote = marketService.getQuote(symbol);
+      const quote = await marketService.getQuoteAsync(symbol);
       if (!quote) {
         return res.status(404).json({ error: `Quote for ${symbol} not found` });
       }
@@ -23,39 +23,39 @@ export const marketController = {
     }
   },
 
-  getAllQuotes(req: Request, res: Response) {
+  async getAllQuotes(_req: Request, res: Response) {
     try {
-      const quotes = marketService.getAllQuotes();
+      const quotes = await marketService.getAllQuotes();
       return res.json({ success: true, count: quotes.length, data: quotes });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
   },
 
-  getHistoricalData(req: Request, res: Response) {
+  async getHistoricalData(req: Request, res: Response) {
     try {
       const { symbol } = req.params;
       const timeframe = (req.query.timeframe as string) || '1D';
-      const candles = marketService.getHistoricalData(symbol, timeframe);
+      const candles = await marketService.getHistoricalData(symbol, timeframe);
       return res.json({ success: true, symbol, timeframe, count: candles.length, data: candles });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
   },
 
-  getOrderBook(req: Request, res: Response) {
+  async getOrderBook(req: Request, res: Response) {
     try {
       const { symbol } = req.params;
-      const orderBook = marketService.getOrderBook(symbol);
+      const orderBook = await marketService.getOrderBook(symbol);
       return res.json({ success: true, data: orderBook });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
   },
 
-  getMarketOverview(req: Request, res: Response) {
+  async getMarketOverview(_req: Request, res: Response) {
     try {
-      const overview = marketService.getMarketOverview();
+      const overview = await marketService.getMarketOverview();
       return res.json({ success: true, data: overview });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });

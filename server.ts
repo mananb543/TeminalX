@@ -42,7 +42,7 @@ app.get('/api/health', (_req, res) => {
   res.json({
     status: 'online',
     app: 'TERMINALX',
-    stage: 'STAGE_2_MONGODB_AUTH',
+    stage: 'STAGE_3_REAL_MARKET_DATA',
     database: {
       status: dbState.status,
       storageType: dbState.storageType,
