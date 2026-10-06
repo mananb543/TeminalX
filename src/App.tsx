@@ -11,6 +11,7 @@ import { OrdersPage } from '../client/app/OrdersPage.tsx';
 import { AnalyticsPage } from '../client/app/AnalyticsPage.tsx';
 import { IntelligencePage } from '../client/app/IntelligencePage.tsx';
 import { NewsPage } from '../client/app/NewsPage.tsx';
+import { AlertsPage } from '../client/app/AlertsPage.tsx';
 import { SettingsPage } from '../client/app/SettingsPage.tsx';
 import { LoginPage } from '../client/app/LoginPage.tsx';
 import { useTradingStore } from '../client/stores/tradingStore.ts';
@@ -126,6 +127,8 @@ export default function App() {
         return <IntelligencePage />;
       case 'news':
         return <NewsPage onSelectStock={handleSelectStock} />;
+      case 'alerts':
+        return <AlertsPage onSelectStock={handleSelectStock} />;
       case 'settings':
         return <SettingsPage />;
       case 'login':
@@ -162,6 +165,10 @@ export default function App() {
         <TopMarketBar
           onOpenSearch={() => setSearchModalOpen(true)}
           onSelectStock={handleSelectStock}
+          onNavigateAlerts={() => {
+            setActiveTab('alerts');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         />
 
         {/* Viewport Content */}

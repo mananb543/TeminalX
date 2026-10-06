@@ -41,8 +41,8 @@ export class DeterministicProvider implements AIProvider {
 
     // 1. Detect query intent
     const isPnLQuery =
-      query.includes('down') ||
-      query.includes('up') ||
+      /\bdown\b/.test(query) ||
+      /\bup\b/.test(query) ||
       query.includes('p&l') ||
       query.includes('pnl') ||
       query.includes('loss') ||
@@ -89,12 +89,72 @@ export class DeterministicProvider implements AIProvider {
       query.includes('cash') ||
       query.includes('ideas');
 
+    const isNewsQuery =
+      query.includes('news') ||
+      query.includes('headline') ||
+      query.includes('wire') ||
+      query.includes('dispatch') ||
+      query.includes('development') ||
+      query.includes('developments') ||
+      query.includes('happened') ||
+      query.includes('recent') ||
+      query.includes('event') ||
+      query.includes('events') ||
+      query.includes('upcoming') ||
+      query.includes('earnings') ||
+      query.includes('dividend') ||
+      query.includes('announcement') ||
+      query.includes('filing');
+
     // Check if query is asking about a specific holding (e.g. RELIANCE, TCS)
     const matchedHolding = h.find(
       (pos) => query.includes(pos.symbol.toLowerCase()) || query.includes(pos.name.toLowerCase())
     );
 
-    if (matchedHolding) {
+    if (isNewsQuery) {
+      const allNews = [
+        ...(context.marketContext.verifiedPortfolioNews || []),
+        ...(context.marketContext.verifiedMacroNews || []),
+      ];
+
+      // Check if user is asking about a specific ticker
+      const targetSym = h.find(pos => query.includes(pos.symbol.toLowerCase()))?.symbol ||
+        ['RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ICICIBANK', 'SBIN', 'ITC', 'LT', 'BHARTIARTL', 'AXISBANK', 'TATAMOTORS'].find(s => query.includes(s.toLowerCase()));
+
+      let relevantArticles = allNews;
+      if (targetSym) {
+        const filtered = allNews.filter(a => a.symbols.map(s => s.toUpperCase()).includes(targetSym.toUpperCase()));
+        if (filtered.length > 0) relevantArticles = filtered;
+      }
+
+      const topArticles = relevantArticles.slice(0, 3);
+      const relevantEvents = (context.marketContext.portfolioEvents || []).slice(0, 4);
+
+      summary = targetSym
+        ? `Verified Intelligence & News Briefing for ${targetSym}: ${topArticles.length} recent verified dispatches and corporate actions retrieved from primary exchange and regulatory feeds.`
+        : `Verified Financial News & Corporate Event Intelligence: Retrieved ${topArticles.length} dispatches directly relevant to your holdings and macroeconomic landscape.`;
+
+      keyDrivers = topArticles.map((art) => {
+        const isHeld = h.some(pos => art.symbols.includes(pos.symbol));
+        const holdingObj = h.find(pos => art.symbols.includes(pos.symbol));
+        return `NEWS ITEM\nHeadline: ${art.headline}\nSource: ${art.source}\nPublished: ${art.publishedAt}\nSymbols: ${art.symbols.join(', ')}\nURL: ${art.url}\nSummary: ${art.summary}\n\nFACT:\nThis article reports that ${art.headline}.\n\nFROM THE ARTICLE:\n${art.summary}\n\nINTERPRETATION:\n${
+          isHeld && holdingObj
+            ? `Directly impacts your active position in ${holdingObj.symbol} (${holdingObj.portfolioWeightPercent}% of portfolio, valuation ${formatINR(holdingObj.marketValue)}). Note: Do not assume this news caused price movements unless established by company filings.`
+            : `Macroeconomic and sector-level relevance to Indian benchmark indices.`
+        }`;
+      });
+
+      if (relevantEvents.length > 0) {
+        keyDrivers.push(
+          `UPCOMING CORPORATE ACTIONS & EVENTS:\n` +
+          relevantEvents.map(e => `• [${e.eventDate}] ${e.symbol} (${e.type}): ${e.title} — ${e.description} (Source: ${e.source})`).join('\n')
+        );
+      }
+
+      riskContext = `News sentiment and event calendar analysis must be viewed through risk exposure: highly weighted positions amplify news-driven volatility.`;
+      benchmarkSection = `News items are sourced from verified public wires and regulatory disclosures (NSE/BSE/RBI). No synthetic news is generated.`;
+      limitations = `Historical news does not guarantee future stock price trajectory. All interpretations are non-predictive.`;
+    } else if (matchedHolding) {
       summary = `Position Analysis for ${matchedHolding.symbol} (${matchedHolding.name}): Current valuation is ${formatINR(
         matchedHolding.marketValue
       )} representing ${matchedHolding.portfolioWeightPercent}% of your total portfolio.`;

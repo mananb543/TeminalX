@@ -1,22 +1,61 @@
-import React from 'react';
-import { Search, RotateCcw, Wallet, Globe, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, RotateCcw, Wallet, Bell, AlertTriangle, AlertCircle, CheckCircle2, ChevronRight, X } from 'lucide-react';
 import { useTradingStore } from '../../stores/tradingStore.ts';
 import { useAuthStore } from '../../stores/authStore.ts';
 import { clientMarketService } from '../../lib/marketService.ts';
+import { alertClient, AlertNotificationItem } from '../../lib/alertClient.ts';
 import { formatINR, formatUSD, formatPercent } from '../../lib/formatters.ts';
 
 interface TopMarketBarProps {
   onOpenSearch: () => void;
   onSelectStock: (symbol: string) => void;
+  onNavigateAlerts?: () => void;
 }
 
-export const TopMarketBar: React.FC<TopMarketBarProps> = ({ onOpenSearch, onSelectStock }) => {
+export const TopMarketBar: React.FC<TopMarketBarProps> = ({
+  onOpenSearch,
+  onSelectStock,
+  onNavigateAlerts,
+}) => {
   const { balance, resetPortfolio } = useTradingStore();
-  const { dbStatus } = useAuthStore();
+  const { dbStatus, isAuthenticated } = useAuthStore();
   const tickerSymbols = ['NIFTY 50', 'SENSEX', 'USD/INR', 'S&P 500', 'NASDAQ'];
-  const [tickers, setTickers] = React.useState(() =>
+  const [tickers, setTickers] = useState(() =>
     tickerSymbols.map((s) => clientMarketService.getQuote(s))
   );
+
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<AlertNotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+    if (notifOpen) document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [notifOpen]);
+
+  // Load unread count and latest notifications
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const fetchNotifs = () => {
+      alertClient
+        .getNotifications({ limit: 5 })
+        .then((data) => {
+          setNotifications(data.notifications);
+          setUnreadCount(data.unreadCount);
+        })
+        .catch(() => {});
+    };
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 25000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   React.useEffect(() => {
     clientMarketService.fetchQuotes(tickerSymbols).then((data) => {
@@ -74,6 +113,102 @@ export const TopMarketBar: React.FC<TopMarketBarProps> = ({ onOpenSearch, onSele
             /
           </kbd>
         </button>
+
+        {/* Notification Bell Dropdown */}
+        {isAuthenticated && (
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setNotifOpen(!notifOpen)}
+              className="relative p-1.5 bg-[#11161D] hover:bg-[#161D26] border border-[#1B222C] rounded text-[#8B949E] hover:text-[#F5F7FA] transition-colors cursor-pointer"
+              title="Alert Notifications"
+            >
+              <Bell className="w-3.5 h-3.5 text-[#00C2FF]" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-[#00C2FF] text-[#07090C] text-[9px] font-bold font-mono flex items-center justify-center tabular-nums">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Flyout Notification Dropdown */}
+            {notifOpen && (
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-lg bg-[#0D1117] border border-[#1B222C] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                <div className="p-3 border-b border-[#1B222C] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-[#F5F7FA]">Incident Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="text-[10px] font-mono text-[#00C2FF]">({unreadCount} unread)</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      alertClient.markAllAsRead().then(() => {
+                        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                        setUnreadCount(0);
+                      });
+                    }}
+                    className="text-[10px] font-mono text-[#8B949E] hover:text-[#00C2FF]"
+                  >
+                    Mark all read
+                  </button>
+                </div>
+
+                <div className="max-h-72 overflow-y-auto divide-y divide-[#1B222C]/60">
+                  {notifications.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-[#8B949E] font-mono">
+                      No recent alert incidents
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className={`p-2.5 text-xs transition-colors hover:bg-[#11161D] ${
+                          !n.read ? 'bg-[#11161D]/50' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="mt-0.5 shrink-0">
+                            {n.severity === 'CRITICAL' ? (
+                              <AlertCircle className="w-3.5 h-3.5 text-[#EF4444]" />
+                            ) : n.severity === 'WARNING' ? (
+                              <AlertTriangle className="w-3.5 h-3.5 text-[#F59E0B]" />
+                            ) : (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2FF]" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-[#F5F7FA] text-[11px] leading-tight truncate">
+                              {n.title}
+                            </div>
+                            <div className="text-[11px] text-[#8B949E] line-clamp-2 mt-0.5">
+                              {n.message}
+                            </div>
+                            <div className="text-[9px] font-mono text-[#505A66] mt-1">
+                              {new Date(n.createdAt).toLocaleTimeString()}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="p-2 border-t border-[#1B222C] bg-[#090C10] text-center">
+                  <button
+                    onClick={() => {
+                      setNotifOpen(false);
+                      onNavigateAlerts?.();
+                    }}
+                    className="w-full py-1 text-xs font-mono text-[#00C2FF] hover:underline flex items-center justify-center gap-1"
+                  >
+                    <span>Open Alert Manager & History</span>
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Database Status Badge */}
         {dbStatus?.status === 'CONNECTED' ? (

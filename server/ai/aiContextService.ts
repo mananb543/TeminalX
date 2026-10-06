@@ -9,6 +9,7 @@ import { riskAnalyticsService } from '../analytics/riskAnalyticsService.ts';
 import { performanceAnalyticsService } from '../analytics/performanceAnalyticsService.ts';
 import { unifiedMarketService } from '../market/marketService.ts';
 import { storageService } from '../services/storageService.ts';
+import { newsService } from '../news/newsService.ts';
 
 export interface StructuredAIContext {
   timestamp: string;
@@ -107,6 +108,36 @@ export interface StructuredAIContext {
       source: string;
       sentiment: string;
     }>;
+    verifiedPortfolioNews: Array<{
+      id: string;
+      headline: string;
+      summary: string;
+      source: string;
+      url: string;
+      publishedAt: string;
+      symbols: string[];
+      sentiment: string | null;
+    }>;
+    verifiedMacroNews: Array<{
+      id: string;
+      headline: string;
+      summary: string;
+      source: string;
+      url: string;
+      publishedAt: string;
+      symbols: string[];
+      sentiment: string | null;
+    }>;
+    portfolioEvents: Array<{
+      id: string;
+      type: string;
+      title: string;
+      symbol: string;
+      eventDate: string;
+      description: string;
+      source: string;
+      url: string;
+    }>;
   };
 }
 
@@ -115,19 +146,32 @@ export class AIContextService {
    * Builds the comprehensive sanitized quantitative context for a specific user
    */
   public async buildContext(userId: string): Promise<StructuredAIContext> {
-    const [summary, risk, allocation, trades, benchmark, rawTransactions, marketOverview] =
-      await Promise.all([
-        portfolioAnalyticsService.getPortfolioSummary(userId),
-        riskAnalyticsService.getRiskMetrics(userId),
-        riskAnalyticsService.getAllocation(userId),
-        riskAnalyticsService.getTradeAnalytics(userId),
-        performanceAnalyticsService.getBenchmarkComparison(userId, '1M').catch(() => null),
-        storageService.getTransactions(userId),
-        unifiedMarketService.getMarketOverview().catch(() => null),
-      ]);
+    const [
+      summary,
+      risk,
+      allocation,
+      trades,
+      benchmark,
+      rawTransactions,
+      marketOverview,
+      rawPortfolioNews,
+      rawMacroNews,
+      rawPortfolioEvents,
+    ] = await Promise.all([
+      portfolioAnalyticsService.getPortfolioSummary(userId),
+      riskAnalyticsService.getRiskMetrics(userId),
+      riskAnalyticsService.getAllocation(userId),
+      riskAnalyticsService.getTradeAnalytics(userId),
+      performanceAnalyticsService.getBenchmarkComparison(userId, '1M').catch(() => null),
+      storageService.getTransactions(userId),
+      unifiedMarketService.getMarketOverview().catch(() => null),
+      newsService.getPortfolioNews(userId, 6).catch(() => []),
+      newsService.getMarketNews(6).catch(() => []),
+      newsService.getPortfolioEvents(userId).catch(() => []),
+    ]);
 
     // Sanitized transactions (top 8, excluding user ID or private metadata)
-    const recentTransactions = rawTransactions.slice(0, 8).map((tx) => ({
+    const recentTransactions = rawTransactions.slice(0, 8).map((tx: any) => ({
       symbol: tx.symbol,
       type: tx.type,
       quantity: tx.quantity,
@@ -138,10 +182,10 @@ export class AIContextService {
 
     // Find benchmark quote
     const niftyQuote =
-      marketOverview?.indianIndices.find((idx) => idx.symbol.includes('NIFTY 50')) || null;
+      marketOverview?.indianIndices.find((idx: any) => idx.symbol.includes('NIFTY 50')) || null;
 
     // Filter relevant market quotes based on user holdings or top equities
-    const holdingSymbols = new Set(summary.holdings.map((h) => h.symbol.toUpperCase()));
+    const holdingSymbols = new Set(summary.holdings.map((h: any) => h.symbol.toUpperCase()));
     const relevantQuotes: Array<{ symbol: string; price: number; changePercent: number }> = [];
 
     if (marketOverview?.topEquities) {
@@ -157,15 +201,45 @@ export class AIContextService {
     }
 
     // Macro news summary
-    const macroNews = unifiedMarketService
-      .getNews()
-      .slice(0, 3)
-      .map((item) => ({
-        title: item.title,
-        summary: item.summary,
-        source: item.source,
-        sentiment: item.sentiment,
-      }));
+    const macroNews = rawMacroNews.slice(0, 3).map((item: any) => ({
+      title: item.headline,
+      summary: item.summary,
+      source: item.source,
+      sentiment: item.sentiment || 'NEUTRAL',
+    }));
+
+    const verifiedPortfolioNews = rawPortfolioNews.map((n: any) => ({
+      id: n.id,
+      headline: n.headline,
+      summary: n.summary,
+      source: n.source,
+      url: n.url,
+      publishedAt: n.publishedAt,
+      symbols: n.symbols,
+      sentiment: n.sentiment,
+    }));
+
+    const verifiedMacroNews = rawMacroNews.map((n: any) => ({
+      id: n.id,
+      headline: n.headline,
+      summary: n.summary,
+      source: n.source,
+      url: n.url,
+      publishedAt: n.publishedAt,
+      symbols: n.symbols,
+      sentiment: n.sentiment,
+    }));
+
+    const portfolioEvents = rawPortfolioEvents.map((e: any) => ({
+      id: e.id,
+      type: e.type,
+      title: e.title,
+      symbol: e.symbol,
+      eventDate: e.eventDate,
+      description: e.description,
+      source: e.source,
+      url: e.url,
+    }));
 
     return {
       timestamp: new Date().toISOString(),
@@ -186,7 +260,7 @@ export class AIContextService {
         winningPositionsCount: summary.winningPositionsCount,
         losingPositionsCount: summary.losingPositionsCount,
       },
-      holdings: summary.holdings.map((h) => ({
+      holdings: summary.holdings.map((h: any) => ({
         symbol: h.symbol,
         name: h.name,
         quantity: h.quantity,
@@ -250,6 +324,9 @@ export class AIContextService {
           : null,
         topQuotes: relevantQuotes,
         recentMacroNews: macroNews,
+        verifiedPortfolioNews,
+        verifiedMacroNews,
+        portfolioEvents,
       },
     };
   }

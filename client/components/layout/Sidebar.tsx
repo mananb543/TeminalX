@@ -8,6 +8,7 @@ import {
   BarChart3,
   Brain,
   Newspaper,
+  Bell,
   Settings,
   User,
   Zap,
@@ -17,6 +18,7 @@ import {
 import { useAuthStore } from '../../stores/authStore.ts';
 import { useTradingStore } from '../../stores/tradingStore.ts';
 import { formatINR } from '../../lib/formatters.ts';
+import { alertClient } from '../../lib/alertClient.ts';
 
 export type ActiveTab =
   | 'dashboard'
@@ -28,6 +30,7 @@ export type ActiveTab =
   | 'analytics'
   | 'intelligence'
   | 'news'
+  | 'alerts'
   | 'settings'
   | 'login';
 
@@ -46,6 +49,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { user, isAuthenticated, logout } = useAuthStore();
   const { balance } = useTradingStore();
+  const [unreadAlerts, setUnreadAlerts] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+    alertClient.getUnreadCount().then(setUnreadAlerts).catch(() => {});
+    const interval = setInterval(() => {
+      alertClient.getUnreadCount().then(setUnreadAlerts).catch(() => {});
+    }, 25000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const mainNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -56,6 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'intelligence', label: 'Intelligence', icon: Brain },
     { id: 'news', label: 'News', icon: Newspaper },
+    { id: 'alerts', label: 'Alerts', icon: Bell },
   ];
 
   const handleLogout = async () => {
@@ -140,7 +154,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       isActive ? 'text-[#00C2FF]' : 'text-[#8B949E]'
                     }`}
                   />
-                  <span>{item.label}</span>
+                  <span className="flex-1">{item.label}</span>
+                  {item.id === 'alerts' && unreadAlerts > 0 && (
+                    <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#00C2FF]/15 text-[#00C2FF] font-semibold tabular-nums">
+                      {unreadAlerts}
+                    </span>
+                  )}
                 </button>
               );
             })}

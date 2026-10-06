@@ -405,7 +405,7 @@ Ask analytical questions about your P&L drivers, single-stock risk exposure, con
             <span>QUANTITATIVE INTELLIGENCE WORKFLOWS</span>
           </div>
           <div className="flex items-center gap-1">
-            {['ALL', 'PORTFOLIO', 'RISK', 'TRADING'].map((cat) => (
+            {['ALL', 'PORTFOLIO', 'RISK', 'NEWS', 'TRADING'].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}

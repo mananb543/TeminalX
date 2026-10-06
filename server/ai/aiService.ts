@@ -12,7 +12,7 @@ import { aiContextService, StructuredAIContext } from './aiContextService.ts';
 export interface PromptShortcut {
   id: string;
   title: string;
-  category: 'PORTFOLIO' | 'RISK' | 'TRADING' | 'MACRO';
+  category: 'PORTFOLIO' | 'RISK' | 'TRADING' | 'MACRO' | 'NEWS';
   prompt: string;
   description: string;
 }
@@ -66,6 +66,27 @@ export const PREBUILT_PROMPTS: PromptShortcut[] = [
     category: 'PORTFOLIO',
     prompt: 'What are some quantitative rebalancing ideas for my portfolio based on my cash ratio and sector weights?',
     description: 'Informational rebalancing insights to manage risk and cash drag',
+  },
+  {
+    id: 'portfolio-news',
+    title: 'Portfolio News Wire',
+    category: 'NEWS',
+    prompt: 'What news and regulatory dispatches are currently affecting my portfolio holdings?',
+    description: 'Verified wire reports and developments for your owned securities',
+  },
+  {
+    id: 'reliance-intel',
+    title: 'RELIANCE Developments',
+    category: 'NEWS',
+    prompt: 'What are the latest verified developments and news dispatches around RELIANCE?',
+    description: 'Corporate filings, operational updates, and market dispatches for RIL',
+  },
+  {
+    id: 'upcoming-events',
+    title: 'Corporate Actions & Events',
+    category: 'NEWS',
+    prompt: 'Are there any upcoming corporate events, earnings dates, or dividend ex-dates for my holdings?',
+    description: 'Scheduled corporate actions and macroeconomic calendar for your portfolio',
   },
 ];
 

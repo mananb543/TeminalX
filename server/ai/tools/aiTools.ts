@@ -9,6 +9,7 @@ import { riskAnalyticsService } from '../../analytics/riskAnalyticsService.ts';
 import { performanceAnalyticsService } from '../../analytics/performanceAnalyticsService.ts';
 import { unifiedMarketService } from '../../market/marketService.ts';
 import { storageService } from '../../services/storageService.ts';
+import { newsService } from '../../news/newsService.ts';
 
 export const AI_FUNCTION_DECLARATIONS: FunctionDeclaration[] = [
   {
@@ -122,6 +123,95 @@ export const AI_FUNCTION_DECLARATIONS: FunctionDeclaration[] = [
         },
       },
       required: ['range'],
+    },
+  },
+  {
+    name: 'getLatestMarketNews',
+    description: 'Retrieve latest verified broad-market financial news dispatches, central bank commentary, and economic policy updates.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        limit: {
+          type: Type.NUMBER,
+          description: 'Maximum number of news dispatches to return (default: 10)',
+        },
+      },
+    },
+  },
+  {
+    name: 'getCompanyNews',
+    description: 'Retrieve verified financial news, quarterly earnings coverage, and corporate developments for a specific security (e.g. RELIANCE, TCS, INFY, HDFCBANK).',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        symbol: {
+          type: Type.STRING,
+          description: 'Security ticker symbol (e.g., RELIANCE, TCS, INFY, SBIN)',
+        },
+        limit: {
+          type: Type.NUMBER,
+          description: 'Maximum number of articles to return (default: 5)',
+        },
+      },
+      required: ['symbol'],
+    },
+  },
+  {
+    name: 'searchNews',
+    description: 'Search verified financial news wire across keywords, topics, executive commentary, or sectors.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        query: {
+          type: Type.STRING,
+          description: 'Search query string (e.g., "telecom 5G", "RBI repo rate", "demerger", "IT guidance")',
+        },
+        limit: {
+          type: Type.NUMBER,
+          description: 'Maximum number of articles to return (default: 10)',
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'getPortfolioNews',
+    description: 'Retrieve latest verified financial news dispatches directly relevant to the securities currently held in the users portfolio.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        limit: {
+          type: Type.NUMBER,
+          description: 'Maximum number of articles to return (default: 10)',
+        },
+      },
+    },
+  },
+  {
+    name: 'getUpcomingEvents',
+    description: 'Retrieve upcoming corporate actions, earnings dates, dividend ex-dates, board meetings, and macroeconomic reviews.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        limit: {
+          type: Type.NUMBER,
+          description: 'Maximum number of events to return (default: 15)',
+        },
+      },
+    },
+  },
+  {
+    name: 'getCompanyEvents',
+    description: 'Retrieve scheduled corporate actions, earnings calls, dividend record dates, and AGMs for a specific security.',
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        symbol: {
+          type: Type.STRING,
+          description: 'Security ticker symbol (e.g. RELIANCE, TCS, INFY)',
+        },
+      },
+      required: ['symbol'],
     },
   },
 ];
@@ -291,6 +381,98 @@ export async function executeAITool(
       const range = args.range || '1M';
       const benchmark = await performanceAnalyticsService.getBenchmarkComparison(userId, range as any);
       return benchmark;
+    }
+
+    case 'getLatestMarketNews': {
+      const limit = Number(args.limit) || 10;
+      const articles = await newsService.getMarketNews(limit);
+      return articles.map((a: any) => ({
+        id: a.id,
+        headline: a.headline,
+        source: a.source,
+        publishedAt: a.publishedAt,
+        symbols: a.symbols,
+        url: a.url,
+        summary: a.summary,
+        sentiment: a.sentiment,
+      }));
+    }
+
+    case 'getCompanyNews': {
+      const symbol = String(args.symbol || '').toUpperCase().trim();
+      const limit = Number(args.limit) || 5;
+      const articles = await newsService.getCompanyNews(symbol, limit);
+      return articles.map((a: any) => ({
+        id: a.id,
+        headline: a.headline,
+        source: a.source,
+        publishedAt: a.publishedAt,
+        symbols: a.symbols,
+        url: a.url,
+        summary: a.summary,
+        sentiment: a.sentiment,
+      }));
+    }
+
+    case 'searchNews': {
+      const query = String(args.query || '').trim();
+      const limit = Number(args.limit) || 10;
+      const articles = await newsService.searchNews(query, limit);
+      return articles.map((a: any) => ({
+        id: a.id,
+        headline: a.headline,
+        source: a.source,
+        publishedAt: a.publishedAt,
+        symbols: a.symbols,
+        url: a.url,
+        summary: a.summary,
+        sentiment: a.sentiment,
+      }));
+    }
+
+    case 'getPortfolioNews': {
+      const limit = Number(args.limit) || 10;
+      const articles = await newsService.getPortfolioNews(userId, limit);
+      return articles.map((a: any) => ({
+        id: a.id,
+        headline: a.headline,
+        source: a.source,
+        publishedAt: a.publishedAt,
+        symbols: a.symbols,
+        url: a.url,
+        summary: a.summary,
+        sentiment: a.sentiment,
+      }));
+    }
+
+    case 'getUpcomingEvents': {
+      const limit = Number(args.limit) || 15;
+      const events = await newsService.getUpcomingEvents(limit);
+      return events.map((e: any) => ({
+        id: e.id,
+        type: e.type,
+        title: e.title,
+        symbol: e.symbol,
+        eventDate: e.eventDate,
+        description: e.description,
+        source: e.source,
+        url: e.url,
+      }));
+    }
+
+    case 'getCompanyEvents': {
+      const symbol = String(args.symbol || '').toUpperCase().trim();
+      const events = await newsService.getCompanyEvents(symbol);
+      return events.map((e: any) => ({
+        id: e.id,
+        type: e.type,
+        title: e.title,
+        symbol: e.symbol,
+        eventDate: e.eventDate,
+        description: e.description,
+        source: e.source,
+        url: e.url,
+      }));
     }
 
     default:

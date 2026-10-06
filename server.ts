@@ -9,6 +9,10 @@ import marketRoutes from './server/routes/marketRoutes.ts';
 import tradingRoutes from './server/routes/tradingRoutes.ts';
 import analyticsRoutes from './server/analytics/analyticsRoutes.ts';
 import aiRoutes from './server/ai/aiRoutes.ts';
+import newsRoutes from './server/news/newsRoutes.ts';
+import eventRoutes from './server/news/eventRoutes.ts';
+import alertRoutes from './server/alerts/alertRoutes.ts';
+import { alertScheduler } from './server/alerts/alertScheduler.ts';
 import { errorHandler } from './server/middleware/errorHandler.ts';
 import { connectDatabase, dbState } from './server/config/database.ts';
 
@@ -40,13 +44,16 @@ app.use('/api/markets', marketRoutes);
 app.use('/api/trading', tradingRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/alerts', alertRoutes);
 
 // Health check endpoint
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'online',
     app: 'TERMINALX',
-    stage: 'STAGE_5_AI_FINANCIAL_INTELLIGENCE',
+    stage: 'STAGE_7_ALERTS_AUTOMATION_ENGINE',
     database: {
       status: dbState.status,
       storageType: dbState.storageType,
@@ -114,6 +121,7 @@ if (!isProduction) {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[TerminalX Server]: Operational on http://0.0.0.0:${PORT}`);
+  alertScheduler.start();
 });
 
 export default app;
