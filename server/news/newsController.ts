@@ -115,7 +115,7 @@ export class NewsController {
    */
   async getPortfolioNews(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const userId = req.user?.id;
+      const userId = req.userId || req.user?.id;
       if (!userId) {
         res.status(401).json({ success: false, error: 'Authentication required' });
         return;
@@ -275,7 +275,7 @@ export class NewsController {
    */
   async getPortfolioEvents(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const userId = req.user?.id;
+      const userId = req.userId || req.user?.id;
       if (!userId) {
         res.status(401).json({ success: false, error: 'Authentication required' });
         return;

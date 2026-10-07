@@ -157,22 +157,59 @@ export const tradingController = {
 
       const { symbol, type, orderType, quantity, limitPrice } = req.body;
 
-      if (!symbol || !type || !orderType || !quantity) {
+      if (!symbol || !type || !orderType || quantity === undefined) {
         return res.status(400).json({
           success: false,
           error: 'Missing required order fields (symbol, type, orderType, quantity)',
+          code: 'VALIDATION_ERROR',
         });
       }
 
-      const numQty = parseInt(quantity, 10);
-      if (isNaN(numQty) || numQty <= 0) {
+      if (type !== 'BUY' && type !== 'SELL') {
         return res.status(400).json({
           success: false,
-          error: 'Quantity must be a positive whole integer',
+          error: 'Order type must be either BUY or SELL',
+          code: 'INVALID_ORDER_SIDE',
         });
       }
 
-      const cleanSymbol = symbol.toUpperCase().trim();
+      if (orderType !== 'MARKET' && orderType !== 'LIMIT') {
+        return res.status(400).json({
+          success: false,
+          error: 'Order execution type must be either MARKET or LIMIT',
+          code: 'INVALID_ORDER_TYPE',
+        });
+      }
+
+      const numQty = Number(quantity);
+      if (!Number.isInteger(numQty) || numQty <= 0 || !Number.isFinite(numQty) || numQty > 1000000) {
+        return res.status(400).json({
+          success: false,
+          error: 'Quantity must be a positive whole integer between 1 and 1,000,000',
+          code: 'INVALID_QUANTITY',
+        });
+      }
+
+      if (orderType === 'LIMIT') {
+        const numLimit = Number(limitPrice);
+        if (isNaN(numLimit) || !Number.isFinite(numLimit) || numLimit <= 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Limit price must be a valid positive number for LIMIT orders',
+            code: 'INVALID_LIMIT_PRICE',
+          });
+        }
+      }
+
+      const cleanSymbol = String(symbol).toUpperCase().trim();
+      if (!cleanSymbol || cleanSymbol.length > 20 || !/^[A-Z0-9\s.\-]+$/.test(cleanSymbol)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid ticker symbol format',
+          code: 'INVALID_SYMBOL',
+        });
+      }
+
       let quote;
       try {
         quote = await unifiedMarketService.getQuote(cleanSymbol);
@@ -375,10 +412,19 @@ export const tradingController = {
       if (!userId) return res.status(401).json({ success: false, error: 'Unauthorized' });
 
       const { name, symbols } = req.body;
+      const cleanName =
+        typeof name === 'string' && name.trim() ? name.trim().slice(0, 50) : 'Primary Watchlist';
+      const cleanSymbols = Array.isArray(symbols)
+        ? symbols
+            .map((s) => String(s).toUpperCase().trim())
+            .filter((s) => s && s.length <= 20 && /^[A-Z0-9\s.\-]+$/.test(s))
+            .slice(0, 50)
+        : [];
+
       const updated = await storageService.saveWatchlist(
         userId,
-        name || 'Primary Watchlist',
-        symbols || []
+        cleanName,
+        cleanSymbols
       );
       return res.json({ success: true, data: updated });
     } catch (err: any) {

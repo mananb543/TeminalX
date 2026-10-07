@@ -109,7 +109,7 @@ export class NotificationService {
 
     if (dbState.isConnected && mongoose.Types.ObjectId.isValid(cleanUserId)) {
       try {
-        const query: any = { userId: cleanUserId };
+        const query: any = { userId: new mongoose.Types.ObjectId(cleanUserId) };
         if (typeof filter?.read === 'boolean') {
           query.read = filter.read;
         }
@@ -151,7 +151,10 @@ export class NotificationService {
 
     if (dbState.isConnected && mongoose.Types.ObjectId.isValid(cleanUserId)) {
       try {
-        return await AlertEvent.countDocuments({ userId: cleanUserId, read: false });
+        return await AlertEvent.countDocuments({
+          userId: new mongoose.Types.ObjectId(cleanUserId),
+          read: false,
+        });
       } catch (err: any) {
         console.warn('[NotificationService MongoDB getUnreadCount fallback]:', err.message);
       }
@@ -167,10 +170,17 @@ export class NotificationService {
     const cleanUserId = userId.trim();
     const cleanId = notificationId.trim();
 
-    if (dbState.isConnected && mongoose.Types.ObjectId.isValid(cleanId)) {
+    if (
+      dbState.isConnected &&
+      mongoose.Types.ObjectId.isValid(cleanId) &&
+      mongoose.Types.ObjectId.isValid(cleanUserId)
+    ) {
       try {
         const res = await AlertEvent.updateOne(
-          { _id: cleanId, userId: cleanUserId },
+          {
+            _id: new mongoose.Types.ObjectId(cleanId),
+            userId: new mongoose.Types.ObjectId(cleanUserId),
+          },
           { $set: { read: true } }
         );
         return res.modifiedCount > 0;
@@ -198,7 +208,7 @@ export class NotificationService {
     if (dbState.isConnected && mongoose.Types.ObjectId.isValid(cleanUserId)) {
       try {
         const res = await AlertEvent.updateMany(
-          { userId: cleanUserId, read: false },
+          { userId: new mongoose.Types.ObjectId(cleanUserId), read: false },
           { $set: { read: true } }
         );
         return res.modifiedCount;
@@ -224,9 +234,16 @@ export class NotificationService {
     const cleanUserId = userId.trim();
     const cleanId = notificationId.trim();
 
-    if (dbState.isConnected && mongoose.Types.ObjectId.isValid(cleanId)) {
+    if (
+      dbState.isConnected &&
+      mongoose.Types.ObjectId.isValid(cleanId) &&
+      mongoose.Types.ObjectId.isValid(cleanUserId)
+    ) {
       try {
-        const res = await AlertEvent.deleteOne({ _id: cleanId, userId: cleanUserId });
+        const res = await AlertEvent.deleteOne({
+          _id: new mongoose.Types.ObjectId(cleanId),
+          userId: new mongoose.Types.ObjectId(cleanUserId),
+        });
         return res.deletedCount > 0;
       } catch (err: any) {
         console.warn('[NotificationService MongoDB deleteNotification fallback]:', err.message);
@@ -251,7 +268,9 @@ export class NotificationService {
 
     if (dbState.isConnected && mongoose.Types.ObjectId.isValid(cleanUserId)) {
       try {
-        const res = await AlertEvent.deleteMany({ userId: cleanUserId });
+        const res = await AlertEvent.deleteMany({
+          userId: new mongoose.Types.ObjectId(cleanUserId),
+        });
         return res.deletedCount;
       } catch (err: any) {
         console.warn('[NotificationService MongoDB clearAllNotifications fallback]:', err.message);

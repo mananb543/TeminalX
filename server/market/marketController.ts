@@ -14,11 +14,12 @@ export const marketController = {
   async getQuote(req: Request, res: Response): Promise<Response> {
     try {
       const { symbol } = req.params;
-      if (!symbol) {
-        return res.status(400).json({ success: false, error: 'Ticker symbol is required.' });
+      const cleanSymbol = typeof symbol === 'string' ? symbol.toUpperCase().trim() : '';
+      if (!cleanSymbol || cleanSymbol.length > 25 || !/^[A-Z0-9\s.\-]+$/.test(cleanSymbol)) {
+        return res.status(400).json({ success: false, error: 'Valid ticker symbol is required (max 25 characters).' });
       }
 
-      const quote = await unifiedMarketService.getQuote(symbol);
+      const quote = await unifiedMarketService.getQuote(cleanSymbol);
       return res.json({
         success: true,
         data: quote,
@@ -42,7 +43,11 @@ export const marketController = {
     try {
       const symbolsQuery = req.query.symbols as string | undefined;
       const symbols = symbolsQuery
-        ? symbolsQuery.split(',').map((s) => s.trim()).filter(Boolean)
+        ? symbolsQuery
+            .split(',')
+            .map((s) => s.trim().toUpperCase())
+            .filter((s) => s.length > 0 && s.length <= 25 && /^[A-Z0-9\s.\-]+$/.test(s))
+            .slice(0, 50)
         : undefined;
 
       const quotes = await unifiedMarketService.getQuotes(symbols);
@@ -67,17 +72,24 @@ export const marketController = {
   async getHistoricalData(req: Request, res: Response): Promise<Response> {
     try {
       const { symbol } = req.params;
-      if (!symbol) {
-        return res.status(400).json({ success: false, error: 'Symbol is required.' });
+      const cleanSymbol = typeof symbol === 'string' ? symbol.toUpperCase().trim() : '';
+      if (!cleanSymbol || cleanSymbol.length > 25 || !/^[A-Z0-9\s.\-]+$/.test(cleanSymbol)) {
+        return res.status(400).json({ success: false, error: 'Valid ticker symbol is required.' });
       }
 
-      const timeframe = (req.query.timeframe as string) || '1D';
-      const range = (req.query.range as string) || '1M';
+      const validRanges = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y', 'ALL'];
+      const validTimeframes = ['1m', '5m', '15m', '30m', '1H', '1D', '1W', '1M'];
 
-      const candles = await unifiedMarketService.getHistoricalData(symbol, timeframe, range);
+      const requestedTimeframe = typeof req.query.timeframe === 'string' ? req.query.timeframe : '1D';
+      const requestedRange = typeof req.query.range === 'string' ? req.query.range : '1M';
+
+      const timeframe = validTimeframes.includes(requestedTimeframe) ? requestedTimeframe : '1D';
+      const range = validRanges.includes(requestedRange) ? requestedRange : '1M';
+
+      const candles = await unifiedMarketService.getHistoricalData(cleanSymbol, timeframe, range);
       return res.json({
         success: true,
-        symbol: symbol.toUpperCase().trim(),
+        symbol: cleanSymbol,
         timeframe,
         range,
         count: candles.length,
@@ -99,7 +111,8 @@ export const marketController = {
    */
   async search(req: Request, res: Response): Promise<Response> {
     try {
-      const query = (req.query.q as string) || '';
+      const rawQuery = typeof req.query.q === 'string' ? req.query.q : '';
+      const query = rawQuery.trim().slice(0, 100);
       const results = await unifiedMarketService.search(query);
       return res.json({
         success: true,
@@ -120,11 +133,12 @@ export const marketController = {
   async getOrderBook(req: Request, res: Response): Promise<Response> {
     try {
       const { symbol } = req.params;
-      if (!symbol) {
-        return res.status(400).json({ success: false, error: 'Symbol is required.' });
+      const cleanSymbol = typeof symbol === 'string' ? symbol.toUpperCase().trim() : '';
+      if (!cleanSymbol || cleanSymbol.length > 25 || !/^[A-Z0-9\s.\-]+$/.test(cleanSymbol)) {
+        return res.status(400).json({ success: false, error: 'Valid ticker symbol is required.' });
       }
 
-      const orderBook = await unifiedMarketService.getOrderBook(symbol);
+      const orderBook = await unifiedMarketService.getOrderBook(cleanSymbol);
       return res.json({
         success: true,
         data: orderBook,

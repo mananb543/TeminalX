@@ -1,165 +1,168 @@
 # TERMINALX
-> **Markets. Data. Intelligence.**
+> **Markets. Data. Intelligence. — Institutional-Grade Financial Terminal & Paper Trading Platform**
 
-TerminalX is an institutional-grade paper trading platform and financial terminal engineered for Indian and global financial markets. Inspired by professional trading platforms like Bloomberg Terminal and modern fintech suites (Zerodha Kite, TradingView, Koyfin), TerminalX provides low-latency market data visualization, technical indicator calculations, Level 2 order books, and real-time virtual trade execution with zero financial risk.
+TerminalX is a full-stack, production-hardened paper trading platform and financial analytics terminal engineered for Indian and global equities. Inspired by institutional suites (Bloomberg Terminal, Koyfin, Zerodha Kite, TradingView), TerminalX pairs real-time market data visualization and quantitative risk modeling with an automated alerting engine, a multi-turn AI financial intelligence analyst, and simulated order execution.
 
-Designed and developed as a 3rd-year Information Technology engineering portfolio project demonstrating full-stack engineering, financial data modeling, modular state management, and modern component architecture.
-
----
-
-## 🎯 Product Concept & Core Features (Stage 1)
-
-TerminalX enables students, quantitative enthusiasts, and traders to simulate positions using virtual capital (default starting balance: **₹10,00,000 INR**).
-
-### Implemented in Stage 1
-- **Top Live Market Ticker**: Streaming major benchmarks including **NIFTY 50**, **SENSEX**, **USD/INR**, **S&P 500**, and **NASDAQ** with real-time percentage change flash.
-- **Institutional Workspace Shell**: Collapsible left sidebar navigation, top market bar, and high-density viewport optimized for financial data analysis.
-- **Interactive Candlestick Charts**: Powered by TradingView **Lightweight Charts v5** featuring intraday and daily historical candles, volume histogram, and timeframes (`1D`, `5D`, `1M`, `6M`, `1Y`, `5Y`).
-- **Mathematical Technical Indicators**:
-  - Simple Moving Averages: **SMA 20**, **SMA 50**, **SMA 200**
-  - Exponential Moving Average: **EMA 21**
-  - **Bollinger Bands** (20-period, 2σ)
-  - **Relative Strength Index (RSI 14)**
-  - MACD indicator calculation logic
-- **Paper Trading Execution Engine**:
-  - Live BUY and SELL order placement with real-time balance validation
-  - Support for **MARKET** and **LIMIT** order types
-  - Dynamic position tracking, cost basis reconciliation, and unrealized/realized P&L calculations
-  - Full execution notification toasts and trade audit history
-- **Level 2 Market Depth (Order Book)**: 6-level bid/ask depth visualization with spread tracking and liquidity bars.
-- **Portfolio & Risk Analytics**: Recharts equity curve visualization, asset allocation breakdowns, and quantitative risk metrics (Sharpe ratio, win rate, profit factor, maximum drawdown).
-- **Multi-Asset Market Explorer**: Cross-asset coverage spanning Indian Equities, Benchmark Indices, Global Indices, Forex Currencies, and Commodities with sorting and instant search.
-- **Instant Command Search Modal**: Global keyboard shortcut (`/`) to lookup securities by symbol or company name.
-- **Financial News Feed**: Market dispatches categorized by Macro, Earnings, Markets, and Commodities with algorithmic sentiment scoring.
-- **Demo Mode**: Full operational fidelity without requiring third-party API keys or paid subscriptions.
+> **DISCLAIMER**: TerminalX is strictly an educational simulation and paper-trading platform. All cash balances (default: ₹10,00,000 INR virtual capital), portfolio holdings, and order executions are entirely simulated with zero real financial liability. TerminalX does not execute live orders on any securities exchange or broker.
 
 ---
 
-## 💻 Tech Stack
+## 🏛 System Architecture
 
-### Frontend
-- **Framework**: React 19 + TypeScript + Vite
-- **Styling**: Tailwind CSS v4 with custom dark institutional palette
-- **Typography**: Plus Jakarta Sans (Interface) & JetBrains Mono (Financial Telemetry)
-- **Financial Charts**: TradingView `lightweight-charts` v5
-- **Portfolio Analytics**: `recharts`
-- **State Management**: `zustand` for client UI and paper trading simulation
-- **Icons**: `lucide-react`
-
-### Backend Architecture
-- **Runtime**: Node.js + Express + TypeScript (`tsx`)
-- **Database Architecture**: MongoDB & Mongoose schemas (prepared modularly for Stage 2)
-- **Security**: JWT & bcrypt password hashing structure
-
----
-
-## 📂 Project Structure
+TerminalX is architected as a high-throughput, modular TypeScript application:
 
 ```
 terminalx/
-├── client/                     # Frontend Application
-│   ├── app/                    # Page Views & Routes
-│   │   ├── DashboardPage.tsx
-│   │   ├── StockDetailPage.tsx
-│   │   ├── MarketsView.tsx
-│   │   ├── WatchlistPage.tsx
-│   │   ├── PortfolioPage.tsx
-│   │   ├── OrdersPage.tsx
-│   │   ├── AnalyticsPage.tsx
-│   │   ├── IntelligencePage.tsx
-│   │   ├── NewsPage.tsx
-│   │   ├── SettingsPage.tsx
-│   │   └── LoginPage.tsx
-│   ├── components/             # Modular UI Components
-│   │   ├── common/             # CommandSearchModal, Skeletons
-│   │   ├── dashboard/          # Metric cards, Portfolio chart, Watchlist table
-│   │   ├── layout/             # Sidebar, TopMarketBar
-│   │   ├── markets/            # Multi-asset grid & table
-│   │   └── stock/              # TradingChart, OrderPanel, OrderBook, Header
-│   ├── lib/                    # Client services & formatters
-│   │   ├── formatters.ts       # Indian Rupee (INR) and USD number formatting
-│   │   └── marketService.ts    # Client market data abstraction
-│   ├── stores/                 # Zustand state stores
-│   │   └── tradingStore.ts     # Virtual balance (₹10L), holdings, orders
-│   └── types/                  # TypeScript interface contracts
-│       ├── market.ts
-│       └── trading.ts
-│
-├── server/                     # Backend API & Services
-│   ├── config/                 # Database & environment configuration
-│   ├── controllers/            # Request handlers (Market, Trading, Auth)
-│   ├── middleware/             # Auth guard & centralized error handling
-│   ├── models/                 # Mongoose domain models (User, Holding, Order, etc.)
-│   ├── routes/                 # Express API routes
-│   ├── services/               # Market data & paper trading engine
-│   └── utils/                  # Mathematical technical indicators (SMA, EMA, RSI)
-│
-├── .env.example                # Environment variables template
-├── index.html                  # HTML entry point with web fonts
-├── metadata.json               # Application metadata
-├── package.json                # Dependencies and build scripts
-├── README.md                   # Project documentation
-├── tsconfig.json               # TypeScript compiler config
-└── vite.config.ts              # Vite bundler configuration
+├── client/                         # Frontend Application (React 19 + TypeScript + Vite)
+│   ├── app/                        # Workspace views (Dashboard, Markets, StockDetail,
+│   │                               #   Portfolio, Orders, Analytics, Intelligence, News, Alerts)
+│   ├── components/                 # High-density institutional UI widgets & charts
+│   ├── lib/                        # Typed API clients (alertClient, marketClient, etc.)
+│   └── stores/                     # Zustand state management (authStore, tradingStore)
+├── server/                         # Backend Application (Node.js + Express + TypeScript)
+│   ├── ai/                         # AI Financial Intelligence Engine (Gemini & Deterministic)
+│   ├── alerts/                     # Automated Alerts Engine & Background Scheduler
+│   ├── analytics/                  # Quantitative Portfolio & Risk Analytics Engine
+│   ├── config/                     # Environment validation & MongoDB Atlas configuration
+│   ├── controllers/                # HTTP request handlers & validation
+│   ├── market/                     # Market Data Provider Abstraction (Demo & Twelve Data)
+│   ├── middleware/                 # Security headers, rate limiting, logging, auth, errors
+│   ├── models/                     # Mongoose schemas & compound database indexes
+│   ├── news/                       # Financial News Wire & Corporate Actions Provider
+│   ├── routes/                     # Authenticated and public Express API routes
+│   └── services/                   # Storage abstraction (Atlas + Resilient In-Memory)
+├── tests/                          # Automated regression & verification test suites
+├── server.ts                       # Full-stack server entry point with Vite middleware
+└── package.json                    # Dependencies & build scripts
 ```
 
 ---
 
-## ⚙️ Local Setup & Installation
+## ⚡ Core Engines & Capabilities
+
+### 1. Market Data Engine (Stage 3)
+- Unified provider interface (`MarketDataProvider`) with seamless switching between deterministic **Demo Provider** and live **Twelve Data Provider**.
+- In-memory candle caching, quote batching, and request deduplication.
+- Coverage across Indian Equities (NSE/BSE), Benchmark Indices (NIFTY 50, SENSEX), Global Indices, Currencies (USD/INR), and Commodities.
+- Interactive TradingView `lightweight-charts` v5 with technical overlays (SMA 20/50/200, EMA 21, Bollinger Bands, RSI 14, MACD).
+
+### 2. Paper Trading & Position Ledger (Stage 2)
+- Real-time BUY/SELL execution with strict balance checks and cost-basis reconciliation.
+- Support for **MARKET** and **LIMIT** order types.
+- Atomic position updates with validation against overdrafts and overselling.
+- User-isolated order audit ledger and transaction history.
+
+### 3. Quantitative Risk & Portfolio Analytics (Stage 4)
+- Mark-to-market portfolio valuation and daily P&L attribution.
+- Annualized Volatility, Sharpe Ratio, and 95% Historical Value-at-Risk (VaR).
+- Peak-to-trough Maximum Drawdown calculation and NIFTY 50 benchmark beta/alpha comparison.
+- Herfindahl-Hirschman Index (HHI) position concentration analysis.
+- Graceful handling of empty or insufficient historical data without fabricating numerical metrics.
+
+### 4. AI Financial Intelligence Engine (Stage 5)
+- Server-side integration with Google Gemini (`gemini-3.8-flash`) via the modern `@google/genai` SDK.
+- Zero-leak architecture: API credentials never enter client bundles.
+- Tool-augmented function calling with real-time portfolio context transparency.
+- High-precision **Deterministic Financial Intelligence Engine** fallback if external LLM APIs are offline or unconfigured.
+
+### 5. Financial News & Corporate Action Calendar (Stage 6)
+- Multi-channel financial news wire with sentiment scoring (Positive, Neutral, Negative) and category tagging.
+- User-scoped portfolio news personalized to currently held securities.
+- Forward-looking corporate event calendar tracking upcoming Earnings dates, Dividend ex-dates, and Board meetings.
+
+### 6. Automated Alerts & Scheduled Monitoring (Stage 7)
+- 8 alert rule types: `PRICE`, `PRICE_CHANGE`, `PORTFOLIO_PNL`, `PORTFOLIO_DRAWDOWN`, `RISK`, `WATCHLIST`, `NEWS`, `EVENT`.
+- 7 logical operators including state-machine crossing triggers (`CROSSES_ABOVE`, `CROSSES_BELOW`).
+- Intelligent deduplication, configurable cooldown windows, and quote grouping across rules.
+- Background singleton scheduler running periodic evaluations on a safe 45-second cadence.
+- In-app incident notification ledger with unread counters and badge indicators.
+
+### 7. Production Hardening & Security (Stage 8)
+- Strict HTTP security headers (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, HSTS).
+- Multi-tier in-memory rate limiting across authentication, order submission, and AI queries.
+- Structured request logging with unique tracing IDs (`X-Request-Id`).
+- Comprehensive input validation rejecting non-finite numbers, malformed symbols, and parameter pollution.
+- Graceful shutdown handling (`SIGTERM`/`SIGINT`) with in-flight connection draining, scheduler halting, and MongoDB connection cleanup.
+
+---
+
+## 🛠 Tech Stack
+
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Zustand, Lucide Icons, Lightweight Charts v5, Recharts.
+- **Backend**: Node.js, Express, TypeScript (`tsx`), Mongoose / MongoDB Atlas, Bcryptjs, JsonWebToken.
+- **AI & Data**: `@google/genai`, Twelve Data REST API.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (version 18 or higher)
-- npm or pnpm
+- Node.js 20+ installed
+- npm 9+ installed
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/your-username/terminalx.git
-cd terminalx
-```
-
-### 2. Install dependencies
+### 1. Clone & Install Dependencies
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
-Copy `.env.example` to `.env`:
+### 2. Environment Configuration
+Copy the example environment configuration:
 ```bash
 cp .env.example .env
 ```
 
-### 4. Start Development Server
+Configure your environment variables as needed:
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `PORT` | Optional | `3000` | Port for the full-stack server |
+| `NODE_ENV` | Optional | `development` | Environment mode (`development` or `production`) |
+| `MONGODB_URI` | Optional | `""` | MongoDB Atlas connection string. If omitted, uses resilient in-memory storage. |
+| `MONGODB_DB_NAME` | Optional | `terminalx` | Database name |
+| `JWT_SECRET` | Required (Prod) | `""` | Secret key for signing authentication tokens |
+| `JWT_EXPIRES_IN` | Optional | `7d` | Token expiration duration |
+| `MARKET_DATA_PROVIDER`| Optional | `demo` | Market data source: `demo` or `real` |
+| `MARKET_DATA_API_KEY` | Optional | `""` | Twelve Data API key (only required when provider is `real`) |
+| `AI_PROVIDER` | Optional | `gemini` | Intelligence engine: `gemini` or `deterministic` |
+| `GEMINI_API_KEY` | Optional | `""` | Google Gemini API key (enables real-time LLM inference) |
+| `NEWS_PROVIDER` | Optional | `demo` | Financial news source: `demo` or `real` |
+| `NEWS_API_KEY` | Optional | `""` | News API key (only required when provider is `real`) |
+
+> **Note on Demo Mode**: TerminalX runs out of the box with zero external API keys. When external keys are omitted, TerminalX automatically leverages its built-in market data and deterministic quantitative engines.
+
+### 3. Run Development Server
 ```bash
 npm run dev
 ```
-The terminal interface will be accessible at `http://localhost:3000`.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🛡️ Demo Mode
+## 🧪 Testing & Verification
 
-TerminalX Stage 1 runs in **High-Fidelity Demo Mode** out of the box:
-- No external paid API keys or financial subscriptions are required.
-- Realistic quotes, historical candles, and Level 2 market depth are generated via `marketService` abstraction.
-- Paper trades execute instantly against synthetic live bid/ask spreads.
-- Virtual cash can be reset back to **₹10,00,000 INR** at any time via Settings or the top bar.
+Run the automated test suites:
+
+```bash
+# Run TypeScript compilation check
+npm run lint
+
+# Run Stage 8 regression & verification suite
+npm test
+
+# Build production bundle
+npm run build
+```
 
 ---
 
-## 🗺️ Engineering Roadmap
+## 🔒 Security Best Practices
 
-- [x] **Stage 1: Core Terminal & Paper Trading Engine** (Completed)
-  - Institutional dark UI shell, Lightweight Charts candlestick engine, Level 2 order book, client paper trading store, simulated order execution, INR currency formatters, and complete route scaffolding.
-- [ ] **Stage 2: Persistent Database & Authentication** (Upcoming)
-  - Connect MongoDB with Mongoose models, implement user registration/login with bcrypt password hashing and JWT token verification.
-- [ ] **Stage 3: Advanced Trading Engine & Execution Logic**
-  - Stop-loss orders, trailing stops, limit order book matching, margin calculations, and real-time execution worker.
-- [ ] **Stage 4: Custom Watchlists & Screener**
-  - Multi-watchlist creation, real-time volume breakout screener, and advanced technical scanner.
-- [ ] **Stage 5: TerminalX Intelligence AI Engine**
-  - Conversational market analysis powered by Google Gemini 2.5 API, multimodal chart analysis, earnings report summarization, and macroeconomic sentiment synthesis.
+1. **Authentication**: All user passwords are encrypted using `bcrypt` with salt rounds. Tokens are issued via JWT with 7-day expiration.
+2. **Multi-User Isolation**: Every database query on user assets (holdings, transactions, alerts, notifications) is strictly scoped to the verified JWT session claims (`req.userId`).
+3. **No Secret Leaks**: Secrets and credentials are never emitted in API responses, client bundles, or structured server logs.
+4. **Input Defense**: All numeric quantities, order sides, prices, and query parameters undergo strict server-side validation.
 
 ---
 
 ## 📄 License
-This project is open-source under the MIT License.
+MIT License. Developed for educational, quantitative research, and engineering portfolio demonstration purposes.

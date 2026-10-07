@@ -296,6 +296,7 @@ export class AlertService {
       // If condition is no longer satisfied, reset triggered flag to allow future re-triggers
       await this.saveEvaluationState(alert.id, userId, {
         triggered: false,
+        lastTriggeredAt: alert.lastTriggeredAt,
         lastEvaluatedAt: nowStr,
         metadata: alert.metadata,
       });
@@ -393,8 +394,12 @@ export class AlertService {
           lastEvaluatedAt: updates.lastEvaluatedAt ? new Date(updates.lastEvaluatedAt) : new Date(),
         };
         if (updates.triggered !== undefined) updateObj.triggered = updates.triggered;
-        if (updates.triggeredAt) updateObj.triggeredAt = new Date(updates.triggeredAt);
-        if (updates.lastTriggeredAt) updateObj.lastTriggeredAt = new Date(updates.lastTriggeredAt);
+        if (updates.triggeredAt !== undefined) {
+          updateObj.triggeredAt = updates.triggeredAt ? new Date(updates.triggeredAt) : null;
+        }
+        if (updates.lastTriggeredAt !== undefined) {
+          updateObj.lastTriggeredAt = updates.lastTriggeredAt ? new Date(updates.lastTriggeredAt) : null;
+        }
         if (updates.metadata) updateObj.metadata = updates.metadata;
 
         await Alert.updateOne(

@@ -5,17 +5,14 @@
  */
 
 import jwt, { SignOptions } from 'jsonwebtoken';
+import { envConfig } from '../config/env.ts';
 
 export interface TokenPayload {
   userId: string;
 }
 
 const getJwtSecret = (): string => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET is not configured in environment variables');
-  }
-  return secret;
+  return envConfig.JWT_SECRET;
 };
 
 export function signToken(userId: string): string {

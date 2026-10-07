@@ -26,48 +26,40 @@ export class AlertEvaluator {
       return { alertId: alert.id, triggered: false, reason: 'Alert is disabled' };
     }
 
-    const now = new Date();
-
-    // Check cooldown window if already triggered
-    if (alert.lastTriggeredAt && alert.cooldownMinutes > 0) {
-      const lastTriggeredTime = new Date(alert.lastTriggeredAt).getTime();
-      const elapsedMinutes = (now.getTime() - lastTriggeredTime) / (60 * 1000);
-
-      if (elapsedMinutes < alert.cooldownMinutes) {
-        return {
-          alertId: alert.id,
-          triggered: false,
-          inCooldown: true,
-          reason: `In cooldown (${Math.ceil(alert.cooldownMinutes - elapsedMinutes)}m remaining)`,
-        };
-      }
-    }
-
     try {
+      let result: AlertEvaluationResult;
       switch (alert.type) {
         case 'PRICE':
-          return await this.evaluatePriceAlert(alert, quoteCache);
+          result = await this.evaluatePriceAlert(alert, quoteCache);
+          break;
 
         case 'PRICE_CHANGE':
-          return await this.evaluatePriceChangeAlert(alert, quoteCache);
+          result = await this.evaluatePriceChangeAlert(alert, quoteCache);
+          break;
 
         case 'PORTFOLIO_PNL':
-          return await this.evaluatePortfolioPnLAlert(alert);
+          result = await this.evaluatePortfolioPnLAlert(alert);
+          break;
 
         case 'PORTFOLIO_DRAWDOWN':
-          return await this.evaluatePortfolioDrawdownAlert(alert);
+          result = await this.evaluatePortfolioDrawdownAlert(alert);
+          break;
 
         case 'RISK':
-          return await this.evaluateRiskAlert(alert);
+          result = await this.evaluateRiskAlert(alert);
+          break;
 
         case 'WATCHLIST':
-          return await this.evaluateWatchlistAlert(alert, quoteCache);
+          result = await this.evaluateWatchlistAlert(alert, quoteCache);
+          break;
 
         case 'EVENT':
-          return await this.evaluateEventAlert(alert);
+          result = await this.evaluateEventAlert(alert);
+          break;
 
         case 'NEWS':
-          return await this.evaluateNewsAlert(alert);
+          result = await this.evaluateNewsAlert(alert);
+          break;
 
         default:
           return {
@@ -76,6 +68,24 @@ export class AlertEvaluator {
             reason: `Unsupported alert type: ${alert.type}`,
           };
       }
+
+      // Check cooldown window if condition triggered
+      if (result.triggered && alert.lastTriggeredAt && alert.cooldownMinutes > 0) {
+        const now = new Date();
+        const lastTriggeredTime = new Date(alert.lastTriggeredAt).getTime();
+        const elapsedMinutes = (now.getTime() - lastTriggeredTime) / (60 * 1000);
+
+        if (elapsedMinutes < alert.cooldownMinutes) {
+          return {
+            ...result,
+            triggered: false,
+            inCooldown: true,
+            reason: `In cooldown (${Math.ceil(alert.cooldownMinutes - elapsedMinutes)}m remaining)`,
+          };
+        }
+      }
+
+      return result;
     } catch (err: any) {
       return {
         alertId: alert.id,
@@ -132,6 +142,13 @@ export class AlertEvaluator {
     if (!alert.metadata) alert.metadata = {};
     alert.metadata.lastObservedPrice = currentPrice;
     alert.metadata.lastObservedValue = currentPrice;
+
+    // Reset crossing state if price has returned to non-triggering baseline
+    if (alert.operator === 'CROSSES_ABOVE' && currentPrice <= threshold) {
+      alert.lastTriggeredAt = null;
+    } else if (alert.operator === 'CROSSES_BELOW' && currentPrice >= threshold) {
+      alert.lastTriggeredAt = null;
+    }
 
     if (!satisfied) {
       return { alertId: alert.id, triggered: false, currentValue: currentPrice };

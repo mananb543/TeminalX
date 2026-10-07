@@ -34,17 +34,17 @@ export const authController = {
       const { name, email, password } = req.body;
 
       // 1. Input Validation
-      if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      if (!name || typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 60) {
         return res.status(400).json({
           success: false,
-          error: 'Name must be at least 2 characters long.',
+          error: 'Name must be between 2 and 60 characters long.',
         });
       }
 
-      if (!email || typeof email !== 'string') {
+      if (!email || typeof email !== 'string' || email.trim().length > 100) {
         return res.status(400).json({
           success: false,
-          error: 'A valid email address is required.',
+          error: 'A valid email address is required (maximum 100 characters).',
         });
       }
 
@@ -57,10 +57,10 @@ export const authController = {
         });
       }
 
-      if (!password || typeof password !== 'string' || password.length < 6) {
+      if (!password || typeof password !== 'string' || password.length < 6 || password.length > 128) {
         return res.status(400).json({
           success: false,
-          error: 'Password must be at least 6 characters long.',
+          error: 'Password must be between 6 and 128 characters long.',
         });
       }
 
@@ -114,10 +114,16 @@ export const authController = {
     try {
       const { email, password } = req.body;
 
-      if (!email || !password) {
+      if (
+        !email ||
+        !password ||
+        typeof email !== 'string' ||
+        typeof password !== 'string' ||
+        password.length > 128
+      ) {
         return res.status(400).json({
           success: false,
-          error: 'Email and password are required.',
+          error: 'Valid email and password are required.',
         });
       }
 

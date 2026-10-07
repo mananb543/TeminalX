@@ -80,5 +80,82 @@
   ],
   "orders": [],
   "transactions": [],
-  "watchlists": []
+  "watchlists": [
+    {
+      "id": "wl_1791299001734",
+      "userId": "6ac50db60b02d45f6c3efe0d",
+      "name": "Primary Watchlist",
+      "symbols": [
+        "RELIANCE",
+        "TCS",
+        "HDFCBANK",
+        "INFY",
+        "ICICIBANK",
+        "TATAMOTORS",
+        "NIFTY 50"
+      ],
+      "createdAt": "2026-10-06T15:03:21.734Z",
+      "updatedAt": "2026-10-06T15:03:21.734Z"
+    },
+    {
+      "id": "wl_1791299125201",
+      "userId": "6ac50e320b02d45f6c3efe2b",
+      "name": "Primary Watchlist",
+      "symbols": [
+        "RELIANCE",
+        "TCS",
+        "INFY"
+      ],
+      "createdAt": "2026-10-06T15:05:25.201Z",
+      "updatedAt": "2026-10-06T15:05:25.201Z"
+    },
+    {
+      "id": "wl_1791299195182",
+      "userId": "6ac50e780b02d45f6c3efe3b",
+      "name": "Primary Watchlist",
+      "symbols": [
+        "RELIANCE",
+        "TCS",
+        "INFY"
+      ],
+      "createdAt": "2026-10-06T15:06:35.182Z",
+      "updatedAt": "2026-10-06T15:06:35.182Z"
+    },
+    {
+      "id": "wl_1791299342440",
+      "userId": "6ac50f0b0b02d45f6c3efe60",
+      "name": "Primary Watchlist",
+      "symbols": [
+        "RELIANCE",
+        "TCS",
+        "INFY"
+      ],
+      "createdAt": "2026-10-06T15:09:02.440Z",
+      "updatedAt": "2026-10-06T15:09:02.440Z"
+    },
+    {
+      "id": "wl_1791301279350",
+      "userId": "6ac5169c312d124ebc8ae9a6",
+      "name": "Primary Watchlist",
+      "symbols": [
+        "RELIANCE",
+        "TCS",
+        "INFY"
+      ],
+      "createdAt": "2026-10-06T15:41:19.350Z",
+      "updatedAt": "2026-10-06T15:41:19.350Z"
+    },
+    {
+      "id": "wl_1791394024314",
+      "userId": "6ac680e58e08e23b9f390253",
+      "name": "Primary Watchlist",
+      "symbols": [
+        "RELIANCE",
+        "TCS",
+        "INFY"
+      ],
+      "createdAt": "2026-10-07T17:27:04.314Z",
+      "updatedAt": "2026-10-07T17:27:04.314Z"
+    }
+  ]
 }

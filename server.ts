@@ -4,6 +4,11 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
+import { validateEnvironment } from './server/config/env.ts';
+import { securityHeaders } from './server/middleware/securityMiddleware.ts';
+import { requestLogger } from './server/middleware/loggingMiddleware.ts';
+import { globalRateLimiter } from './server/middleware/rateLimitMiddleware.ts';
 import authRoutes from './server/routes/authRoutes.ts';
 import marketRoutes from './server/routes/marketRoutes.ts';
 import tradingRoutes from './server/routes/tradingRoutes.ts';
@@ -17,6 +22,7 @@ import { errorHandler } from './server/middleware/errorHandler.ts';
 import { connectDatabase, dbState } from './server/config/database.ts';
 
 dotenv.config({ override: true });
+validateEnvironment();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +31,13 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
-// CORS Configuration supporting credentials and frontend clients
+// 1. Security Headers & Request Tracing ID
+app.use(securityHeaders);
+
+// 2. Structured Request Logging
+app.use(requestLogger);
+
+// 3. CORS Configuration supporting credentials and frontend clients
 app.use(
   cors({
     origin: (_origin, callback) => {
@@ -36,9 +48,13 @@ app.use(
 );
 
 app.use(cookieParser());
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// API Routes
+// 4. Global API Rate Limiter
+app.use('/api', globalRateLimiter);
+
+// 5. API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/markets', marketRoutes);
 app.use('/api/trading', tradingRoutes);
@@ -53,7 +69,7 @@ app.get('/api/health', (_req, res) => {
   res.json({
     status: 'online',
     app: 'TERMINALX',
-    stage: 'STAGE_7_ALERTS_AUTOMATION_ENGINE',
+    stage: 'STAGE_8_PRODUCTION_HARDENED_V1_0',
     database: {
       status: dbState.status,
       storageType: dbState.storageType,
@@ -119,9 +135,52 @@ if (!isProduction) {
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`[TerminalX Server]: Operational on http://0.0.0.0:${PORT}`);
   alertScheduler.start();
 });
+
+// Graceful Shutdown Handler
+let isShuttingDown = false;
+const gracefulShutdown = async (signal: string) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  console.log(`\n[TerminalX Server]: Received ${signal}. Starting graceful shutdown...`);
+
+  // 1. Stop background alert scheduler
+  try {
+    alertScheduler.stop();
+    console.log('[TerminalX Server]: Background alert scheduler stopped.');
+  } catch (err: any) {
+    console.warn('[TerminalX Server]: Scheduler shutdown warning:', err.message);
+  }
+
+  // 2. Stop accepting new HTTP requests
+  server.close(async () => {
+    console.log('[TerminalX Server]: HTTP server closed. In-flight requests drained.');
+
+    // 3. Close database connection
+    try {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.connection.close(false);
+        console.log('[TerminalX Server]: Database connection closed safely.');
+      }
+    } catch (err: any) {
+      console.warn('[TerminalX Server]: Database disconnect warning:', err.message);
+    }
+
+    console.log('[TerminalX Server]: Graceful shutdown completed.');
+    process.exit(0);
+  });
+
+  // Force close after 8 seconds if connections refuse to drain
+  setTimeout(() => {
+    console.error('[TerminalX Server]: Forceful termination due to timeout.');
+    process.exit(1);
+  }, 8000).unref();
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 export default app;

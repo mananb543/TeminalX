@@ -26,8 +26,19 @@ export class AIController {
         return;
       }
 
+      if (message.trim().length > 4000) {
+        res.status(400).json({
+          success: false,
+          error: 'Query message exceeds maximum permitted length of 4000 characters',
+        });
+        return;
+      }
+
       const cleanHistory = Array.isArray(history)
-        ? history.filter((m) => m && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant'))
+        ? history
+            .filter((m) => m && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant'))
+            .slice(-30)
+            .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }))
         : [];
 
       const result = await aiService.chat(userId, message.trim(), cleanHistory);
