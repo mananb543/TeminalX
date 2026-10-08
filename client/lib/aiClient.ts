@@ -31,7 +31,8 @@ export interface AIStatusData {
 }
 
 function getAuthHeaders(): HeadersInit {
-  const token = sessionStorage.getItem('terminalx_token');
+  const token =
+    sessionStorage.getItem('terminalx_token') || localStorage.getItem('terminalx_token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

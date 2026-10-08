@@ -122,10 +122,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    if (window.confirm('Sign out of your TerminalX account?')) {
-      await logout();
-      window.location.reload();
-    }
+    await logout();
   };
 
   return (

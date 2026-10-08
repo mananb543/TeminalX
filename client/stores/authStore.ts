@@ -5,6 +5,7 @@
  */
 
 import { create } from 'zustand';
+import { useTradingStore } from './tradingStore.ts';
 
 export interface UserProfile {
   id: string;
@@ -80,8 +81,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   checkAuth: async () => {
     set({ isCheckingAuth: true });
     try {
+      // If user explicitly logged out in this browser, do NOT auto-restore session from lingering cookie
+      const isExplicitlyLoggedOut =
+        sessionStorage.getItem('terminalx_logged_out') === 'true' ||
+        localStorage.getItem('terminalx_logged_out') === 'true';
+
+      if (isExplicitlyLoggedOut) {
+        get().fetchDbStatus();
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isCheckingAuth: false,
+        });
+        return false;
+      }
+
       // In case Authorization Bearer token is needed in cross-origin environments, check memory/session
-      const storedToken = sessionStorage.getItem('terminalx_token');
+      const storedToken =
+        sessionStorage.getItem('terminalx_token') || localStorage.getItem('terminalx_token');
       const headers: Record<string, string> = {};
       if (storedToken) {
         headers['Authorization'] = `Bearer ${storedToken}`;
@@ -98,7 +116,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (data.success && data.user) {
           set({
             user: data.user,
-            token: storedToken,
+            token: storedToken || data.token || null,
             isAuthenticated: true,
             isCheckingAuth: false,
             dbStatus: data.dbStatus || null,
@@ -113,6 +131,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       set({
         user: null,
+        token: null,
         isAuthenticated: false,
         isCheckingAuth: false,
       });
@@ -122,6 +141,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       get().fetchDbStatus();
       set({
         user: null,
+        token: null,
         isAuthenticated: false,
         isCheckingAuth: false,
       });
@@ -147,9 +167,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return { success: false, error: errorMessage };
       }
 
-      // Store token in sessionStorage for backup if 3P cookies are restricted
+      // Reset explicit logged-out state
+      sessionStorage.removeItem('terminalx_logged_out');
+      localStorage.removeItem('terminalx_logged_out');
+
+      // Store token in both session and local storage
       if (data.token) {
         sessionStorage.setItem('terminalx_token', data.token);
+        localStorage.setItem('terminalx_token', data.token);
       }
 
       set({
@@ -186,8 +211,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return { success: false, error: errorMessage };
       }
 
+      // Reset explicit logged-out state
+      sessionStorage.removeItem('terminalx_logged_out');
+      localStorage.removeItem('terminalx_logged_out');
+
       if (data.token) {
         sessionStorage.setItem('terminalx_token', data.token);
+        localStorage.setItem('terminalx_token', data.token);
       }
 
       set({
@@ -208,7 +238,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     try {
+      // 1. Mark explicit logged-out state to prevent silent auto-login
+      sessionStorage.setItem('terminalx_logged_out', 'true');
+      localStorage.setItem('terminalx_logged_out', 'true');
+
+      // 2. Remove all stored token artifacts
       sessionStorage.removeItem('terminalx_token');
+      localStorage.removeItem('terminalx_token');
+
+      // 3. Clear trading store state and holdings to prevent cross-user leakage
+      useTradingStore.getState().clearUserData();
+
+      // 4. Request backend to clear HTTP-only cookies
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',

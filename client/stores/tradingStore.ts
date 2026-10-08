@@ -52,6 +52,7 @@ export interface TradingStoreState {
   }) => { success: boolean; message: string };
 
   resetPortfolio: () => void;
+  clearUserData: () => void;
   setBalance: (balance: number) => void;
   syncFromBackend: () => Promise<void>;
   getPortfolioSummary: () => PortfolioSummary;
@@ -270,7 +271,8 @@ export const useTradingStore = create<TradingStoreState>((set, get) => ({
       }));
 
       // Persist to MongoDB in background
-      const storedToken = sessionStorage.getItem('terminalx_token');
+      const storedToken =
+        sessionStorage.getItem('terminalx_token') || localStorage.getItem('terminalx_token');
       const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
       if (storedToken) authHeaders['Authorization'] = `Bearer ${storedToken}`;
       fetch('/api/trading/order', {
@@ -352,7 +354,8 @@ export const useTradingStore = create<TradingStoreState>((set, get) => ({
       }));
 
       // Persist to MongoDB in background
-      const storedToken = sessionStorage.getItem('terminalx_token');
+      const storedToken =
+        sessionStorage.getItem('terminalx_token') || localStorage.getItem('terminalx_token');
       const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
       if (storedToken) authHeaders['Authorization'] = `Bearer ${storedToken}`;
       fetch('/api/trading/order', {
@@ -387,9 +390,19 @@ export const useTradingStore = create<TradingStoreState>((set, get) => ({
     });
   },
 
+  clearUserData: () => {
+    set({
+      balance: INITIAL_BALANCE,
+      holdings: [],
+      orders: [],
+      notification: null,
+    });
+  },
+
   syncFromBackend: async () => {
     try {
-      const storedToken = sessionStorage.getItem('terminalx_token');
+      const storedToken =
+        sessionStorage.getItem('terminalx_token') || localStorage.getItem('terminalx_token');
       const headers: Record<string, string> = {};
       if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
 

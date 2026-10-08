@@ -174,8 +174,27 @@ export const authController = {
    * Clear session cookie and sign out
    */
   async logout(req: Request, res: Response): Promise<Response> {
-    res.clearCookie(COOKIE_NAME, { path: '/' });
-    res.clearCookie('token', { path: '/' });
+    const isProduction = process.env.NODE_ENV === 'production';
+    const clearOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+      path: '/',
+    };
+
+    res.clearCookie(COOKIE_NAME, clearOptions);
+    res.clearCookie('token', clearOptions);
+
+    // Also send explicit expired Set-Cookie headers for cross-browser safety
+    res.setHeader('Set-Cookie', [
+      `${COOKIE_NAME}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; ${
+        isProduction ? 'Secure; SameSite=None' : 'SameSite=Lax'
+      }`,
+      `token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; ${
+        isProduction ? 'Secure; SameSite=None' : 'SameSite=Lax'
+      }`,
+    ]);
+
     return res.json({
       success: true,
       message: 'Logged out successfully.',

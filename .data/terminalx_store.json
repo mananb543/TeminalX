@@ -156,6 +156,18 @@
       ],
       "createdAt": "2026-10-07T17:27:04.314Z",
       "updatedAt": "2026-10-07T17:27:04.314Z"
+    },
+    {
+      "id": "wl_1791473904563",
+      "userId": "6ac7b8ed759757fba1681c26",
+      "name": "Primary Watchlist",
+      "symbols": [
+        "RELIANCE",
+        "TCS",
+        "INFY"
+      ],
+      "createdAt": "2026-10-08T15:38:24.563Z",
+      "updatedAt": "2026-10-08T15:38:24.563Z"
     }
   ]
 }

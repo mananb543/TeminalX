@@ -177,7 +177,8 @@ export interface BenchmarkComparisonResult {
 }
 
 function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('terminalx_token');
+  const token =
+    sessionStorage.getItem('terminalx_token') || localStorage.getItem('terminalx_token');
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;

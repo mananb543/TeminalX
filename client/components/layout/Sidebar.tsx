@@ -73,11 +73,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const handleLogout = async () => {
-    if (window.confirm('Are you sure you want to sign out of TerminalX?')) {
-      await logout();
-      onNavigate('login');
-      if (mobileOpen) onToggleMobile();
-    }
+    await logout();
+    onNavigate('login');
+    if (mobileOpen) onToggleMobile();
   };
 
   return (

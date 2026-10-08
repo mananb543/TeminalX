@@ -80,7 +80,8 @@ export interface AlertNotificationItem {
 
 class AlertClient {
   private getHeaders(): HeadersInit {
-    const token = localStorage.getItem('terminalx_token');
+    const token =
+      sessionStorage.getItem('terminalx_token') || localStorage.getItem('terminalx_token');
     return {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

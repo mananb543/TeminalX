@@ -68,6 +68,10 @@ export const authService = {
    */
   async logout(): Promise<void> {
     try {
+      sessionStorage.setItem('terminalx_logged_out', 'true');
+      localStorage.setItem('terminalx_logged_out', 'true');
+      sessionStorage.removeItem('terminalx_token');
+      localStorage.removeItem('terminalx_token');
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',

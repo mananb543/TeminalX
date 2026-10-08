@@ -42,7 +42,11 @@ export const TopMarketBar: React.FC<TopMarketBarProps> = ({
 
   // Load unread count and latest notifications
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
     const fetchNotifs = () => {
       alertClient
         .getNotifications({ limit: 5 })
