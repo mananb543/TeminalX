@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import { validateEnvironment } from './server/config/env.ts';
@@ -29,7 +30,11 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
-const isProduction = process.env.NODE_ENV === 'production';
+const distPath = path.resolve(__dirname, 'dist');
+const hasProductionBuild = fs.existsSync(path.resolve(distPath, 'index.html'));
+const isProduction =
+  process.env.NODE_ENV === 'production' ||
+  (process.env.NODE_ENV !== 'development' && hasProductionBuild);
 
 // 1. Security Headers & Request Tracing ID
 app.use(securityHeaders);
@@ -116,23 +121,38 @@ connectDatabase().catch((err) => {
   console.warn('[TerminalX Startup]: Initial MongoDB connection check completed:', err.message);
 });
 
-// Mount Vite middleware in development, or serve built static assets in production
+// Mount production static assets or Vite development middleware
+// Preferred fix: Serve pre-built production bundle for production and published domain traffic
+if (isProduction || hasProductionBuild) {
+  app.use((req, res, next) => {
+    const host = req.headers.host || '';
+    if (isProduction || host.includes('terminalx.ai.studio')) {
+      return express.static(distPath)(req, res, next);
+    }
+    next();
+  });
+
+  app.get('*', (req, res, next) => {
+    const host = req.headers.host || '';
+    if (isProduction || host.includes('terminalx.ai.studio')) {
+      return res.sendFile(path.resolve(distPath, 'index.html'));
+    }
+    next();
+  });
+}
+
+// In development, mount Vite middleware for local development requests
 if (!isProduction) {
   const { createServer: createViteServer } = await import('vite');
   const vite = await createViteServer({
     server: {
       middlewareMode: true,
       hmr: process.env.DISABLE_HMR !== 'true',
+      allowedHosts: ['terminalx.ai.studio'],
     },
     appType: 'spa',
   });
   app.use(vite.middlewares);
-} else {
-  const distPath = path.resolve(__dirname, 'dist');
-  app.use(express.static(distPath));
-  app.get('*', (_req, res) => {
-    res.sendFile(path.resolve(distPath, 'index.html'));
-  });
 }
 
 const server = app.listen(PORT, '0.0.0.0', () => {

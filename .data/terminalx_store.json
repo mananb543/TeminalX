@@ -44,6 +44,78 @@
       "balance": 1000000,
       "createdAt": "2026-09-29T21:03:43.436Z",
       "updatedAt": "2026-09-29T21:03:43.436Z"
+    },
+    {
+      "id": "6ac9008e8ee410012746e23b",
+      "name": "Trader Alpha",
+      "email": "user_a_1791557774577@terminalx.test",
+      "passwordHash": "$2b$10$p0c7TyMop5lIYXIaC8jhNuI45um0ebx7s5gHdF0tq86cvejoqV27S",
+      "balance": 987459.25,
+      "createdAt": "2026-10-09T14:56:14.798Z",
+      "updatedAt": "2026-10-09T14:56:15.240Z"
+    },
+    {
+      "id": "6ac9008e8ee410012746e23c",
+      "name": "Trader Beta",
+      "email": "user_b_1791557774577@terminalx.test",
+      "passwordHash": "$2b$10$pWpaluQS8M0B9zvhYy6lAOReTz0xaFCHngjXxLcXTT/OtBtcDm3f2",
+      "balance": 1000000,
+      "createdAt": "2026-10-09T14:56:14.923Z",
+      "updatedAt": "2026-10-09T14:56:14.923Z"
+    },
+    {
+      "id": "6ac901528ee410012746e23d",
+      "name": "Trader Alpha",
+      "email": "user_a_1791557970387@terminalx.test",
+      "passwordHash": "$2b$10$zY2IOd8eoQBU81YX8YnAkO1BJHak6vfWjCdMBwFSmfxaWzrVr.4.i",
+      "balance": 987459.25,
+      "createdAt": "2026-10-09T14:59:30.566Z",
+      "updatedAt": "2026-10-09T14:59:30.982Z"
+    },
+    {
+      "id": "6ac901528ee410012746e23e",
+      "name": "Trader Beta",
+      "email": "user_b_1791557970387@terminalx.test",
+      "passwordHash": "$2b$10$.1Xd5EqxMmpCJWC8PrBQoew5BE/Qt4uphMEcwJmeKSEhtzYVt0J1C",
+      "balance": 1000000,
+      "createdAt": "2026-10-09T14:59:30.680Z",
+      "updatedAt": "2026-10-09T14:59:30.680Z"
+    },
+    {
+      "id": "6ac9020d8ee410012746e23f",
+      "name": "Stage7 Tester",
+      "email": "stage7_test_1791558157716@terminalx.test",
+      "passwordHash": "$2b$10$IWkoKyFcaQqTKXulQ0iEmOYD7bNuSKjcu4RhgJY1tajeGd9Zy5zmK",
+      "balance": 1000000,
+      "createdAt": "2026-10-09T15:02:37.888Z",
+      "updatedAt": "2026-10-09T15:02:37.888Z"
+    },
+    {
+      "id": "6ac902788ee410012746e240",
+      "name": "Stage7 Tester",
+      "email": "stage7_test_1791558264081@terminalx.test",
+      "passwordHash": "$2b$10$3ElomVIpdugEGoS0ZcTmUegIQHJMc5hhuWIAgejql0TLny2mc8zCC",
+      "balance": 1000000,
+      "createdAt": "2026-10-09T15:04:24.259Z",
+      "updatedAt": "2026-10-09T15:04:24.259Z"
+    },
+    {
+      "id": "6ac902998ee410012746e241",
+      "name": "Stage7 Tester",
+      "email": "stage7_test_1791558297380@terminalx.test",
+      "passwordHash": "$2b$10$4GVBXlKpzz8AXljxUe0Tv.DFPSp3NlFZuLILceuMNNjOXOS7B5Pdy",
+      "balance": 1000000,
+      "createdAt": "2026-10-09T15:04:57.552Z",
+      "updatedAt": "2026-10-09T15:04:57.552Z"
+    },
+    {
+      "id": "6ac902a58ee410012746e242",
+      "name": "Regular Trader",
+      "email": "regular_trader_1791558309464@terminalx.test",
+      "passwordHash": "$2b$10$/zU2hTzn3mvNHn4eXaCbHuQxjRSBOq1HtCpyLufkpzo4/PEr/r9R2",
+      "balance": 981098.5,
+      "createdAt": "2026-10-09T15:05:09.566Z",
+      "updatedAt": "2026-10-09T15:05:09.812Z"
     }
   ],
   "holdings": [
@@ -76,10 +148,152 @@
       "totalCost": 63200,
       "createdAt": "2026-09-27T19:28:13.928Z",
       "updatedAt": "2026-09-29T19:28:13.928Z"
+    },
+    {
+      "id": "h_1791557775198_377uj",
+      "userId": "6ac9008e8ee410012746e23b",
+      "symbol": "TCS",
+      "quantity": 3,
+      "averagePrice": 4180.25,
+      "totalCost": 12540.75,
+      "createdAt": "2026-10-09T14:56:15.198Z",
+      "updatedAt": "2026-10-09T14:56:15.240Z"
+    },
+    {
+      "id": "h_1791557970946_qn45b",
+      "userId": "6ac901528ee410012746e23d",
+      "symbol": "TCS",
+      "quantity": 3,
+      "averagePrice": 4180.25,
+      "totalCost": 12540.75,
+      "createdAt": "2026-10-09T14:59:30.946Z",
+      "updatedAt": "2026-10-09T14:59:30.983Z"
+    },
+    {
+      "id": "h_1791558309813_6qysk",
+      "userId": "6ac902a58ee410012746e242",
+      "symbol": "INFY",
+      "quantity": 10,
+      "averagePrice": 1890.15,
+      "totalCost": 18901.5,
+      "createdAt": "2026-10-09T15:05:09.813Z",
+      "updatedAt": "2026-10-09T15:05:09.813Z"
     }
   ],
-  "orders": [],
-  "transactions": [],
+  "orders": [
+    {
+      "id": "ord_1791558309813_k3xmi2",
+      "userId": "6ac902a58ee410012746e242",
+      "symbol": "INFY",
+      "type": "BUY",
+      "orderType": "MARKET",
+      "quantity": 10,
+      "price": 1890.15,
+      "totalValue": 18901.5,
+      "status": "COMPLETED",
+      "timestamp": "2026-10-09T15:05:09.813Z"
+    },
+    {
+      "id": "ord_1791557970983_z69h5i",
+      "userId": "6ac901528ee410012746e23d",
+      "symbol": "TCS",
+      "type": "SELL",
+      "orderType": "MARKET",
+      "quantity": 2,
+      "price": 4180.25,
+      "totalValue": 8360.5,
+      "status": "COMPLETED",
+      "timestamp": "2026-10-09T14:59:30.983Z"
+    },
+    {
+      "id": "ord_1791557970946_dr147g",
+      "userId": "6ac901528ee410012746e23d",
+      "symbol": "TCS",
+      "type": "BUY",
+      "orderType": "MARKET",
+      "quantity": 5,
+      "price": 4180.25,
+      "totalValue": 20901.25,
+      "status": "COMPLETED",
+      "timestamp": "2026-10-09T14:59:30.946Z"
+    },
+    {
+      "id": "ord_1791557775240_0mzy4b",
+      "userId": "6ac9008e8ee410012746e23b",
+      "symbol": "TCS",
+      "type": "SELL",
+      "orderType": "MARKET",
+      "quantity": 2,
+      "price": 4180.25,
+      "totalValue": 8360.5,
+      "status": "COMPLETED",
+      "timestamp": "2026-10-09T14:56:15.240Z"
+    },
+    {
+      "id": "ord_1791557775199_suxmsv",
+      "userId": "6ac9008e8ee410012746e23b",
+      "symbol": "TCS",
+      "type": "BUY",
+      "orderType": "MARKET",
+      "quantity": 5,
+      "price": 4180.25,
+      "totalValue": 20901.25,
+      "status": "COMPLETED",
+      "timestamp": "2026-10-09T14:56:15.199Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "tx_1791558309813_mhxurf",
+      "userId": "6ac902a58ee410012746e242",
+      "symbol": "INFY",
+      "type": "BUY",
+      "quantity": 10,
+      "price": 1890.15,
+      "totalValue": 18901.5,
+      "timestamp": "2026-10-09T15:05:09.813Z"
+    },
+    {
+      "id": "tx_1791557970983_p6qv7a",
+      "userId": "6ac901528ee410012746e23d",
+      "symbol": "TCS",
+      "type": "SELL",
+      "quantity": 2,
+      "price": 4180.25,
+      "totalValue": 8360.5,
+      "timestamp": "2026-10-09T14:59:30.983Z"
+    },
+    {
+      "id": "tx_1791557970946_nhj35u",
+      "userId": "6ac901528ee410012746e23d",
+      "symbol": "TCS",
+      "type": "BUY",
+      "quantity": 5,
+      "price": 4180.25,
+      "totalValue": 20901.25,
+      "timestamp": "2026-10-09T14:59:30.946Z"
+    },
+    {
+      "id": "tx_1791557775240_ouhwb7",
+      "userId": "6ac9008e8ee410012746e23b",
+      "symbol": "TCS",
+      "type": "SELL",
+      "quantity": 2,
+      "price": 4180.25,
+      "totalValue": 8360.5,
+      "timestamp": "2026-10-09T14:56:15.240Z"
+    },
+    {
+      "id": "tx_1791557775199_aiwvdq",
+      "userId": "6ac9008e8ee410012746e23b",
+      "symbol": "TCS",
+      "type": "BUY",
+      "quantity": 5,
+      "price": 4180.25,
+      "totalValue": 20901.25,
+      "timestamp": "2026-10-09T14:56:15.199Z"
+    }
+  ],
   "watchlists": [
     {
       "id": "wl_1791299001734",
